@@ -20,6 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_hal_tim.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,8 +52,19 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 /* USER CODE BEGIN PV */
 
 
+#define NUMBER_OF_PIXELS    64
+#define BYTES_PER_PIXEL		24
+#define ZERO_PADDING		42
+#define BYTES_PER_FRAME		(NUMBER_OF_PIXELS*BYTES_PER_PIXEL)
+#define BUFFER_LENGTH 		((BYTES_PER_FRAME  + ZERO_PADDING) * 2)
 
-uint32_t ws2812[3] = {255, 140, 90};
+#define TIM_PERIOD			29
+#define TIM_COMPARE_HIGH	18
+#define TIM_COMPARE_LOW		9
+
+uint32_t ws2812[BUFFER_LENGTH] = {0};
+static const uint32_t *  HT_LED_ptr  =  &ws2812[((BYTES_PER_FRAME + ZERO_PADDING)-1)];
+static const uint32_t *  FT_LED_ptr  =  &ws2812[0];
 
 /* USER CODE END PV */
 
@@ -62,8 +75,9 @@ static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
-void ft_ws2812_cb(DMA_HandleTypeDef* dma);
-void ht_ws2812_cb(DMA_HandleTypeDef* dma);
+void WS2812_send(const uint8_t (*color)[3],uint32_t * ptr_start,const uint16_t _len);
+void fill_all();
+void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut, float amount);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -111,23 +125,23 @@ int main(void)
 
 
 
-  HAL_TIM_Base_Start(&htim4);
+//  HAL_TIM_Base_Start(&htim4);
 
 
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
+//  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
+//  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
 
 
   HAL_TIM_Base_Start(&htim3);
 
-  HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_CPLT_CB_ID, ft_ws2812_cb);    // Register DMA transfer complete callback
-  HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_HALFCPLT_CB_ID, ht_ws2812_cb);    // Register DMA transfer complete callback
+ // HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_CPLT_CB_ID, ft_ws2812_cb);    // Register DMA transfer complete callback
+ // HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_HALFCPLT_CB_ID, ht_ws2812_cb);    // Register DMA transfer complete callback
 
 
 
   __HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
   __HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_HT);
-  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_3,(uint32_t *)ws2812,3);
+  HAL_TIM_PWM_Start_DMA(&htim3,TIM_CHANNEL_3,(uint32_t *)ws2812,((BUFFER_LENGTH/4)-1));
 
 
 
@@ -237,11 +251,13 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE BEGIN TIM3_Init 1 */
 
+
+
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 100;
+  htim3.Init.Prescaler = 150;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 256;
+  htim3.Init.Period = TIM_PERIOD;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -303,7 +319,7 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
   sConfigOC.Pulse = 250;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -357,11 +373,84 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+uint8_t colourbuf[3]={255,0,255};
 
-void ft_ws2812_cb(DMA_HandleTypeDef* dma)
-{}
-void ht_ws2812_cb(DMA_HandleTypeDef* dma)
-{}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* dma)
+{
+	WS2812_send(&colourbuf,HT_LED_ptr,BYTES_PER_FRAME/4);
+}
+
+
+void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef* dma)
+{
+
+	WS2812_send(&colourbuf,FT_LED_ptr,BYTES_PER_FRAME/4);
+}
+
+
+
+
+
+
+
+void WS2812_send(const uint8_t (*color)[3],uint32_t * ptr_start, const uint16_t _len)
+{
+	int i, j;
+	uint8_t led;
+	uint16_t len = _len;
+	uint32_t * cursor = ptr_start;
+
+	// Byte order mapping. 0 is red, 1 is green, 2 is blue
+	const uint8_t pix_map[3] = {0, 2, 1};
+	led = 0;					// reset led index
+
+	// fill transmit buffer with correct compare values to achieve
+	// correct pulse widths according to color values
+	while (len)
+	{
+		for (i = 0; i < 3; i++)   //RGB
+		{
+			for (j = 0; j < 8; j++)					// 8 bytes per colour component
+			{
+				if ( (color[led][pix_map[i]]<<j) & 0x80 )	// data sent MSB first, j = 0 is MSB j = 7 is LSB
+				{
+					* cursor = TIM_COMPARE_HIGH;
+				}
+				else
+				{
+					* cursor = TIM_COMPARE_LOW;
+				}
+				cursor++;
+			}
+		}
+
+		led++;
+		len--;
+	}
+
+
+
+
+}
+
+void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut, float amount)
+{
+	float r, g, b;
+
+	r = ((float)colourB[0] * amount) + ((float)colourA[0] * (1.0 - amount));
+	g = ((float)colourB[1] * amount) + ((float)colourA[1] * (1.0 - amount));
+	b = ((float)colourB[2] * amount) + ((float)colourA[2] * (1.0 - amount));
+
+	colourOut[0] = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
+	colourOut[1] = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
+	colourOut[2] = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
+}
+
+
+
+
+
 
 /* USER CODE END 4 */
 
