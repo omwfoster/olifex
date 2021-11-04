@@ -71,11 +71,10 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
-static const uint16_t *ptr_left_start = &ws2812[0];
-static const uint16_t *ptr_left_end = &ws2812[((NUMBER_OF_PIXELS_HALF
-		+ ZERO_PADDING) - 1)];
+static const uint16_t *ptr_left_start  = &ws2812[0];
+static const uint16_t *ptr_left_end    = &ws2812[((NUMBER_OF_PIXELS_HALF + ZERO_PADDING) - 1)];
 static const uint16_t *ptr_right_start = &ws2812[(BUFFER_LENGTH / 2)];
-static const uint16_t *ptr_right_end = &ws2812[(BUFFER_LENGTH - 1)];
+static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - 1)];
 
 
 typedef struct xRGB {
