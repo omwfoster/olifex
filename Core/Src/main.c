@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "pixel.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -60,36 +61,22 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 /* USER CODE BEGIN PV */
 
-#define NUMBER_OF_PIXELS    		64
-#define NUMBER_OF_PIXELS_HALF  		(NUMBER_OF_PIXELS/2)
-#define ZERO_PADDING 				42
-#define BUFFER_LENGTH 				((NUMBER_OF_PIXELS  + ZERO_PADDING) * 2)
 
-#define TIM_PERIOD			29
-#define TIM_COMPARE_HIGH	18
-#define TIM_COMPARE_LOW		9
+
+
+#define TIM_PERIOD			128
+#define TIM_COMPARE_HIGH	90
+#define TIM_COMPARE_LOW		35
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
 static const uint16_t *ptr_left_start  = &ws2812[0];
 static const uint16_t *ptr_left_end    = &ws2812[((NUMBER_OF_PIXELS_HALF + ZERO_PADDING) - 1)];
-static const uint16_t *ptr_right_start = &ws2812[(BUFFER_LENGTH / 2)];
+static const uint16_t *ptr_right_start = &ws2812[((BUFFER_LENGTH / 2)-1)];
 static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - 1)];
 
 
-typedef struct xRGB {
-	unsigned char unused;
-	unsigned char red;
-	unsigned char green;
-	unsigned char blue;
-}XRGB;
-
-
-typedef union uint32_RGB
-{
-	XRGB	  xRGB;
-	uint32_t  xUINT;
-} UINT32_RGB;
+UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = {{{0,0,0,0}}};
 
 void WS2812_send(UINT32_RGB *, uint16_t*);
 
@@ -141,23 +128,12 @@ int main(void) {
 	MX_DMA_Init();
 	MX_CRC_Init();
 	MX_TIM3_Init();
-	MX_TIM4_Init();
 	/* USER CODE BEGIN 2 */
 
-//  HAL_TIM_Base_Start(&htim4);
-
-//  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_3);
-//  HAL_TIM_PWM_Start(&htim4,TIM_CHANNEL_4);
-
 	HAL_TIM_Base_Start(&htim3);
-
-	// HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_CPLT_CB_ID, ft_ws2812_cb);    // Register DMA transfer complete callback
-	// HAL_DMA_RegisterCallback(&hdma_tim3_ch3, HAL_DMA_XFER_HALFCPLT_CB_ID, ht_ws2812_cb);    // Register DMA transfer complete callback
-
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_HT);
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,
-			((BUFFER_LENGTH / 4) - 1));
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,((BUFFER_LENGTH / 4) - 1));
 
 	/* USER CODE END 2 */
 
@@ -253,9 +229,9 @@ static void MX_TIM3_Init(void) {
 
 	/* USER CODE END TIM3_Init 1 */
 	htim3.Instance = TIM3;
-	htim3.Init.Prescaler = 100;
+	htim3.Init.Prescaler = 105;
 	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim3.Init.Period = 256;
+	htim3.Init.Period = 120;
 	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
@@ -268,7 +244,7 @@ static void MX_TIM3_Init(void) {
 		Error_Handler();
 	}
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 128;
+	sConfigOC.Pulse = 0;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3)
@@ -282,57 +258,7 @@ static void MX_TIM3_Init(void) {
 
 }
 
-/**
- * @brief TIM4 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_TIM4_Init(void) {
 
-	/* USER CODE BEGIN TIM4_Init 0 */
-
-	/* USER CODE END TIM4_Init 0 */
-
-	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
-	TIM_OC_InitTypeDef sConfigOC = { 0 };
-
-	/* USER CODE BEGIN TIM4_Init 1 */
-
-	/* USER CODE END TIM4_Init 1 */
-	htim4.Instance = TIM4;
-	htim4.Init.Prescaler = 100;
-	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim4.Init.Period = 500;
-	htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_PWM_Init(&htim4) != HAL_OK) {
-		Error_Handler();
-	}
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 250;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	sConfigOC.Pulse = 100;
-	if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	/* USER CODE BEGIN TIM4_Init 2 */
-
-	/* USER CODE END TIM4_Init 2 */
-	HAL_TIM_MspPostInit(&htim4);
-
-}
 
 /** 
  * Enable DMA controller clock
@@ -357,8 +283,6 @@ static void MX_DMA_Init(void) {
 static void MX_GPIO_Init(void) {
 
 	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE();
-	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 }
@@ -368,7 +292,7 @@ static void MX_GPIO_Init(void) {
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 	uint16_t *_cursor = (uint16_t*)ptr_right_start;
-	UINT32_RGB _rgb = {{0,0,0,0}};
+	UINT32_RGB _rgb = {{255,255,255,0}};
 
 
 	while (_cursor < ptr_right_end) {
@@ -379,7 +303,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 
-	UINT32_RGB _rgb = {{0,0,0,0}};
+	UINT32_RGB _rgb = {{255,255,255,0}};
 	uint16_t *_cursor = (uint16_t*)ptr_left_start;
 
 	while (_cursor < ptr_left_end) {
@@ -403,18 +327,7 @@ void WS2812_send(UINT32_RGB *color, uint16_t * cursor) {
 
 }
 
-void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
-		float amount) {
-	float r, g, b;
 
-	r = ((float) colourB[0] * amount) + ((float) colourA[0] * (1.0 - amount));
-	g = ((float) colourB[1] * amount) + ((float) colourA[1] * (1.0 - amount));
-	b = ((float) colourB[2] * amount) + ((float) colourA[2] * (1.0 - amount));
-
-	colourOut[0] = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
-	colourOut[1] = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
-	colourOut[2] = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
-}
 
 /* USER CODE END 4 */
 
