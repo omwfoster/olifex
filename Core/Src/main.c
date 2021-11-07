@@ -229,9 +229,9 @@ static void MX_TIM3_Init(void) {
 
 	/* USER CODE END TIM3_Init 1 */
 	htim3.Instance = TIM3;
-	htim3.Init.Prescaler = 105;
+	htim3.Init.Prescaler = 1;
 	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim3.Init.Period = 120;
+	htim3.Init.Period = 105;
 	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
