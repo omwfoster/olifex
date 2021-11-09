@@ -54,6 +54,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CRC_HandleTypeDef hcrc;
+
 TIM_HandleTypeDef htim3;
 DMA_HandleTypeDef hdma_tim3_ch3;
 
@@ -70,7 +72,7 @@ uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
 static const uint16_t *ptr_left_start  = &ws2812[0];
 static const uint16_t *ptr_left_end    = &ws2812[((NUMBER_OF_PIXELS_HALF + ZERO_PADDING) - 1)];
-static const uint16_t *ptr_right_start = &ws2812[((BUFFER_LENGTH / 2)-1)];
+static const uint16_t *ptr_right_start = &ws2812[((BUFFER_LENGTH / 2))];
 static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - 1)];
 
 
@@ -84,6 +86,7 @@ void WS2812_send(UINT32_RGB *, uint16_t*);
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
+static void MX_CRC_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -124,13 +127,14 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  MX_CRC_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
 	HAL_TIM_Base_Start(&htim3);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_HT);
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,((BUFFER_LENGTH / 4) - 1));
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,(sizeof(ws2812)/sizeof(uint32_t)));
 
   /* USER CODE END 2 */
  
@@ -187,6 +191,32 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
+
 }
 
 /**
@@ -262,8 +292,9 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
 
-	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
 
 }
 
@@ -279,6 +310,8 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 		WS2812_send(&_rgb, _cursor);
 		_cursor++;
 	}
+	_cursor = ptr_right_start;
+
 }
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
@@ -290,6 +323,7 @@ void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 		WS2812_send(&_rgb, _cursor);
 		_cursor++;
 	}
+	_cursor = ptr_left_start;
 }
 
 

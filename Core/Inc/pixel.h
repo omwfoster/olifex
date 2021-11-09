@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define NUMBER_OF_PIXELS    		64
+#define NUMBER_OF_PIXELS    		4
 #define NUMBER_OF_PIXELS_HALF  		(NUMBER_OF_PIXELS/2)
 #define ZERO_PADDING 				42
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS  + ZERO_PADDING) * 2)
