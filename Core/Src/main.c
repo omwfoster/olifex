@@ -64,9 +64,9 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 
 
-#define TIM_PERIOD			128
-#define TIM_COMPARE_HIGH	90
-#define TIM_COMPARE_LOW		35
+#define TIM_PERIOD			64
+#define TIM_COMPARE_HIGH	42
+#define TIM_COMPARE_LOW		15
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
@@ -240,7 +240,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 105;
+  htim3.Init.Period = 52;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -303,7 +303,7 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 	uint16_t *_cursor = (uint16_t*)ptr_right_start;
-	UINT32_RGB _rgb = {{255,255,255,0}};
+	UINT32_RGB _rgb = {{0,255,255,255}};
 
 
 	while (_cursor < ptr_right_end) {
@@ -316,7 +316,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 
-	UINT32_RGB _rgb = {{255,255,255,0}};
+	UINT32_RGB _rgb = {{0,1,1,1}};
 	uint16_t *_cursor = (uint16_t*)ptr_left_start;
 
 	while (_cursor < ptr_left_end) {
