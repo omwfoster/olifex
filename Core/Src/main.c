@@ -64,16 +64,16 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 
 
-#define TIM_PERIOD			64
-#define TIM_COMPARE_HIGH	42
-#define TIM_COMPARE_LOW		15
+#define TIM_PERIOD			105
+#define TIM_COMPARE_HIGH	29
+#define TIM_COMPARE_LOW		67
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
 static const uint16_t *ptr_left_start  = &ws2812[0];
-static const uint16_t *ptr_left_end    = &ws2812[((NUMBER_OF_PIXELS_HALF + ZERO_PADDING) - 1)];
-static const uint16_t *ptr_right_start = &ws2812[((BUFFER_LENGTH / 2))];
-static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - 1)];
+static const uint16_t *ptr_left_end    = &ws2812[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
+static const uint16_t *ptr_right_start = &ws2812[(BUFFER_LENGTH / 2)];
+static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - ZERO_PADDING)];
 
 
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = {{{0,0,0,0}}};
@@ -238,11 +238,11 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 1;
+  htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 52;
+  htim3.Init.Period = TIM_PERIOD;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -302,28 +302,30 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
-	uint16_t *_cursor = (uint16_t*)ptr_right_start;
-	UINT32_RGB _rgb = {{0,255,255,255}};
+	static uint16_t *_cursor;
+	_cursor = (uint16_t*)ptr_right_start;
+	static UINT32_RGB _rgb = {{0,1,1,1}};
 
 
 	while (_cursor < ptr_right_end) {
 		WS2812_send(&_rgb, _cursor);
-		_cursor++;
+		_cursor+=24;
 	}
-	_cursor = ptr_right_start;
+	_cursor = (uint16_t*)ptr_right_start;
 
 }
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 
-	UINT32_RGB _rgb = {{0,1,1,1}};
-	uint16_t *_cursor = (uint16_t*)ptr_left_start;
+	static UINT32_RGB _rgb = {{0,255,255,255}};
+	static uint16_t *_cursor;
+	_cursor = (uint16_t*)ptr_left_start;
 
 	while (_cursor < ptr_left_end) {
 		WS2812_send(&_rgb, _cursor);
-		_cursor++;
+		_cursor+=24;
 	}
-	_cursor = ptr_left_start;
+	_cursor = (uint16_t*)ptr_left_start;
 }
 
 
@@ -331,10 +333,10 @@ void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 void WS2812_send(UINT32_RGB *color, uint16_t * cursor) {
 
 	uint16_t i = 1;
-	uint16_t *_cursor = cursor;
+	uint16_t *_cursor =cursor;
 
 	while (i < 24) {
-		*_cursor =(varGetBit(color,i)) ? TIM_COMPARE_HIGH : TIM_COMPARE_LOW;
+		*_cursor =(varGetBit((* color),(i))) ? TIM_COMPARE_HIGH : TIM_COMPARE_LOW;
 		_cursor ++;
 		i++;
 	}
