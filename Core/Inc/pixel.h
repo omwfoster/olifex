@@ -33,6 +33,8 @@ typedef union uint32_RGB
 
 
 
+
+
 void drawFrame(void);
 void clearAll(void);
 void getPixelColor(int px_index, UINT32_RGB * px_color);

@@ -31,6 +31,9 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -79,6 +82,9 @@ static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - ZERO_PADDING)]
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = {{{0,0,0,0}}};
 
 void WS2812_send(UINT32_RGB *, uint16_t*);
+frame_status ws2812_status;
+void process_left();
+void process_right();
 
 /* USER CODE END PV */
 
@@ -103,6 +109,7 @@ static void MX_TIM3_Init(void);
   */
 int main(void)
 {
+  ws2812_status = WRITE_LEFT;
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -302,6 +309,30 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
+	ws2812_status = WRITE_RIGHT;
+
+}
+
+
+void process_left()
+{
+	static UINT32_RGB _rgb = {{0,255,255,255}};
+	static uint16_t *_cursor;
+	_cursor = (uint16_t*)ptr_left_start;
+
+	while (_cursor < ptr_left_end) {
+		WS2812_send(&_rgb, _cursor);
+		_cursor+=24;
+	}
+	_cursor = (uint16_t*)ptr_left_start;
+
+}
+
+
+void process_right()
+
+{
+
 	static uint16_t *_cursor;
 	_cursor = (uint16_t*)ptr_right_start;
 	static UINT32_RGB _rgb = {{0,1,1,1}};
@@ -315,17 +346,10 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 }
 
-void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
+void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma)
+{
 
-	static UINT32_RGB _rgb = {{0,255,255,255}};
-	static uint16_t *_cursor;
-	_cursor = (uint16_t*)ptr_left_start;
-
-	while (_cursor < ptr_left_end) {
-		WS2812_send(&_rgb, _cursor);
-		_cursor+=24;
-	}
-	_cursor = (uint16_t*)ptr_left_start;
+	ws2812_status = WRITE_LEFT;
 }
 
 

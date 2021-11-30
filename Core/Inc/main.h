@@ -39,6 +39,12 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+typedef enum
+{
+	WRITE_LEFT,
+	WRITE_RIGHT
+} frame_status;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
