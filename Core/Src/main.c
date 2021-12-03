@@ -82,9 +82,34 @@ static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - ZERO_PADDING)]
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = {{{0,0,0,0}}};
 
 void WS2812_send(UINT32_RGB *, uint16_t*);
-frame_status ws2812_status;
+
 void process_left();
 void process_right();
+
+
+
+
+
+typedef struct
+{
+	uint16_t *ptr_left_start;
+	uint16_t *ptr_left_end;
+	uint16_t *ptr_right_start;
+	uint16_t *ptr_right_end;
+	uint16_t *cursor;
+
+	enum
+	{
+		WRITE_LEFT,
+		WRITE_RIGHT
+	} frame_status;
+
+	bool write_complete;
+
+
+}led_init_struct;
+
+led_init_struct  led_init_1;
 
 /* USER CODE END PV */
 
@@ -101,6 +126,16 @@ static void MX_TIM3_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void init_dma_buffer(uint16_t * _array,led_init_struct * _init)
+{
+
+	_init->ptr_left_start  = &_array[0];
+	_init->ptr_left_end    = &_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
+	_init->ptr_right_start = &_array[(BUFFER_LENGTH / 2)];
+	_init->ptr_right_end   = &_array[(BUFFER_LENGTH - ZERO_PADDING)];
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -109,7 +144,10 @@ static void MX_TIM3_Init(void);
   */
 int main(void)
 {
-  ws2812_status = WRITE_LEFT;
+
+init_dma_buffer(&ws2812[0],&led_init_1);
+
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
