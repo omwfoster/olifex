@@ -31,9 +31,6 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-
-
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -64,52 +61,35 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 /* USER CODE BEGIN PV */
 
-
-
-
 #define TIM_PERIOD			105
 #define TIM_COMPARE_HIGH	29
 #define TIM_COMPARE_LOW		67
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
 
-static const uint16_t *ptr_left_start  = &ws2812[0];
-static const uint16_t *ptr_left_end    = &ws2812[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
-static const uint16_t *ptr_right_start = &ws2812[(BUFFER_LENGTH / 2)];
-static const uint16_t *ptr_right_end   = &ws2812[(BUFFER_LENGTH - ZERO_PADDING)];
+UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
 
-
-UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = {{{0,0,0,0}}};
-
-void WS2812_send(UINT32_RGB *, uint16_t*);
+void WS2812_send(uint32_t*, uint16_t*);
 
 void process_left();
 void process_right();
 
-
-
-
-
-typedef struct
-{
+typedef struct {
 	uint16_t *ptr_left_start;
 	uint16_t *ptr_left_end;
 	uint16_t *ptr_right_start;
 	uint16_t *ptr_right_end;
 	uint16_t *cursor;
 
-	enum
-	{
-		WRITE_LEFT,
-		WRITE_RIGHT
+	enum {
+		WRITE_LEFT, WRITE_RIGHT
 	} frame_status;
 
 	bool write_complete;
 
+} led_init_struct;
 
-}led_init_struct;
-
-led_init_struct  led_init_1;
+led_init_struct led_init_1;
 
 /* USER CODE END PV */
 
@@ -126,220 +106,216 @@ static void MX_TIM3_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-void init_dma_buffer(uint16_t * _array,led_init_struct * _init)
-{
+void init_dma_buffer(uint16_t *_array, led_init_struct *_init) {
 
-	_init->ptr_left_start  = &_array[0];
-	_init->ptr_left_end    = &_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
+	_init->ptr_left_start = &_array[0];
+	_init->ptr_left_end = &_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
 	_init->ptr_right_start = &_array[(BUFFER_LENGTH / 2)];
-	_init->ptr_right_end   = &_array[(BUFFER_LENGTH - ZERO_PADDING)];
+	_init->ptr_right_end = &_array[(BUFFER_LENGTH - ZERO_PADDING)];
+	_init->frame_status = WRITE_LEFT;
+	_init->write_complete = true;
 
 }
 
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
 
-init_dma_buffer(&ws2812[0],&led_init_1);
+	init_dma_buffer(&ws2812[0], &led_init_1);
 
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE END 1 */
 
-  /* USER CODE END 1 */
-  
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE END Init */
 
-  /* USER CODE END Init */
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE END SysInit */
 
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_CRC_Init();
-  MX_TIM3_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_CRC_Init();
+	MX_TIM3_Init();
+	/* USER CODE BEGIN 2 */
 
 	HAL_TIM_Base_Start(&htim3);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_HT);
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,(sizeof(ws2812)/sizeof(uint32_t)));
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,
+			(sizeof(ws2812) / sizeof(uint32_t)));
 
-  /* USER CODE END 2 */
- 
- 
+	/* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-    /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+		if (led_init_1.write_complete) {
+			if (led_init_1.frame_status == WRITE_LEFT) {
+				process_left();
+			} else {
+				process_right();
+			}
+		}
+
+		/* USER CODE END WHILE */
+		/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
-  /** Configure the main internal regulator output voltage 
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 168;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLRCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+	/** Configure the main internal regulator output voltage
+	 */
+	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+	/** Initializes the CPU, AHB and APB busses clocks
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLM = 8;
+	RCC_OscInitStruct.PLL.PLLN = 168;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	RCC_OscInitStruct.PLL.PLLQ = 2;
+	RCC_OscInitStruct.PLL.PLLR = 2;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
+	/** Initializes the CPU, AHB and APB busses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLRCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
+		Error_Handler();
+	}
 }
 
 /**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_CRC_Init(void)
-{
+ * @brief CRC Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_CRC_Init(void) {
 
-  /* USER CODE BEGIN CRC_Init 0 */
+	/* USER CODE BEGIN CRC_Init 0 */
 
-  /* USER CODE END CRC_Init 0 */
+	/* USER CODE END CRC_Init 0 */
 
-  /* USER CODE BEGIN CRC_Init 1 */
+	/* USER CODE BEGIN CRC_Init 1 */
 
-  /* USER CODE END CRC_Init 1 */
-  hcrc.Instance = CRC;
-  if (HAL_CRC_Init(&hcrc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CRC_Init 2 */
+	/* USER CODE END CRC_Init 1 */
+	hcrc.Instance = CRC;
+	if (HAL_CRC_Init(&hcrc) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN CRC_Init 2 */
 
-  /* USER CODE END CRC_Init 2 */
+	/* USER CODE END CRC_Init 2 */
 
 }
 
 /**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
+ * @brief TIM3 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM3_Init(void) {
 
-  /* USER CODE BEGIN TIM3_Init 0 */
+	/* USER CODE BEGIN TIM3_Init 0 */
 
-  /* USER CODE END TIM3_Init 0 */
+	/* USER CODE END TIM3_Init 0 */
 
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
+	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+	TIM_OC_InitTypeDef sConfigOC = { 0 };
 
-  /* USER CODE BEGIN TIM3_Init 1 */
+	/* USER CODE BEGIN TIM3_Init 1 */
 
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = TIM_PERIOD;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
+	/* USER CODE END TIM3_Init 1 */
+	htim3.Instance = TIM3;
+	htim3.Init.Prescaler = 0;
+	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim3.Init.Period = TIM_PERIOD;
+	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 0;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM3_Init 2 */
 
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
+	/* USER CODE END TIM3_Init 2 */
+	HAL_TIM_MspPostInit(&htim3);
 
 }
 
 /** 
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void) 
-{
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void) {
 
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
+	/* DMA controller clock enable */
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA1_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
+	/* DMA interrupt init */
+	/* DMA1_Stream7_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
 
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_GPIO_Init(void) {
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
 
 }
 
@@ -347,78 +323,70 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
-	ws2812_status = WRITE_RIGHT;
-
+	led_init_1.frame_status = WRITE_RIGHT;
+	led_init_1.write_complete = false;
 }
 
+void process_left() {
 
-void process_left()
-{
-	static UINT32_RGB _rgb = {{0,255,255,255}};
-	static uint16_t *_cursor;
-	_cursor = (uint16_t*)ptr_left_start;
+	static UINT32_RGB _rgb = { { 0, 255, 255, 255 } };
+	led_init_1.cursor = led_init_1.ptr_left_start;
 
-	while (_cursor < ptr_left_end) {
-		WS2812_send(&_rgb, _cursor);
-		_cursor+=24;
+	while (led_init_1.cursor < led_init_1.ptr_left_end) {
+		WS2812_send(&_rgb.xUINT, led_init_1.cursor);
+		led_init_1.cursor += 24;
 	}
-	_cursor = (uint16_t*)ptr_left_start;
+	led_init_1.cursor = led_init_1.ptr_right_start;
+	led_init_1.write_complete = true;
 
 }
 
+void process_right(){
 
-void process_right()
+	static UINT32_RGB _rgb = { { 0, 1, 1, 1 } };
+	led_init_1.cursor = led_init_1.ptr_right_start;
 
-{
-
-	static uint16_t *_cursor;
-	_cursor = (uint16_t*)ptr_right_start;
-	static UINT32_RGB _rgb = {{0,1,1,1}};
-
-
-	while (_cursor < ptr_right_end) {
-		WS2812_send(&_rgb, _cursor);
-		_cursor+=24;
+	while (led_init_1.cursor < led_init_1.ptr_right_end) {
+		WS2812_send(&_rgb.xUINT, led_init_1.cursor);
+		led_init_1.cursor += 24;
 	}
-	_cursor = (uint16_t*)ptr_right_start;
+	led_init_1.cursor = led_init_1.ptr_left_start;
+	led_init_1.write_complete = true;
+}
+
+void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
+
+	led_init_1.frame_status = WRITE_LEFT;
+	led_init_1.write_complete = true;
 
 }
 
-void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma)
-{
-
-	ws2812_status = WRITE_LEFT;
-}
+void WS2812_send(uint32_t *color, uint16_t *cursor) {
 
 
+	uint16_t *_cursor = cursor;
+	uint16_t i;
 
-void WS2812_send(UINT32_RGB *color, uint16_t * cursor) {
+	for(i = 1;i <= 24;++i){
+		*_cursor =
+				(varGetBit((*color), (i))) ? TIM_COMPARE_HIGH : TIM_COMPARE_LOW;
+		_cursor++;
 
-	uint16_t i = 1;
-	uint16_t *_cursor =cursor;
-
-	while (i < 24) {
-		*_cursor =(varGetBit((* color),(i))) ? TIM_COMPARE_HIGH : TIM_COMPARE_LOW;
-		_cursor ++;
-		i++;
 	}
 
 }
-
-
 
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
+	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
