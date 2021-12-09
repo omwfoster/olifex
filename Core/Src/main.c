@@ -62,10 +62,11 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 /* USER CODE BEGIN PV */
 
 #define TIM_PERIOD			105
-#define TIM_COMPARE_HIGH	29
-#define TIM_COMPARE_LOW		67
+#define TIM_COMPARE_HIGH	31
+#define TIM_COMPARE_LOW		70
 
 uint16_t ws2812[BUFFER_LENGTH] = { 0 };
+
 
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
 
@@ -75,17 +76,17 @@ void process_left();
 void process_right();
 
 typedef struct {
+	uint16_t *output_buffer;
 	uint16_t *ptr_left_start;
 	uint16_t *ptr_left_end;
 	uint16_t *ptr_right_start;
 	uint16_t *ptr_right_end;
 	uint16_t *cursor;
-
 	enum {
-		WRITE_LEFT, WRITE_RIGHT
+		WRITE_LEFT, WRITE_RIGHT, WRITE_DONE
 	} frame_status;
 
-	bool write_complete;
+
 
 } led_init_struct;
 
@@ -108,12 +109,13 @@ static void MX_TIM3_Init(void);
 
 void init_dma_buffer(uint16_t *_array, led_init_struct *_init) {
 
-	_init->ptr_left_start = &_array[0];
-	_init->ptr_left_end = &_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)];
-	_init->ptr_right_start = &_array[(BUFFER_LENGTH / 2)];
-	_init->ptr_right_end = &_array[(BUFFER_LENGTH - ZERO_PADDING)];
+	_init->output_buffer = ws2812;
+	_init->ptr_left_start = &_array[ZERO_PADDING];
+	_init->ptr_left_end = &_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL)+ZERO_PADDING];
+	_init->ptr_right_start = &_array[((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)+(ZERO_PADDING*2))];
+	_init->ptr_right_end = &_array[BUFFER_LENGTH];
 	_init->frame_status = WRITE_LEFT;
-	_init->write_complete = true;
+
 
 }
 
@@ -158,7 +160,7 @@ int main(void) {
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_HT);
 	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) ws2812,
-			(sizeof(ws2812) / sizeof(uint32_t)));
+			(sizeof(ws2812) / sizeof(uint16_t)));
 
 	/* USER CODE END 2 */
 
@@ -166,13 +168,13 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 
-		if (led_init_1.write_complete) {
+
 			if (led_init_1.frame_status == WRITE_LEFT) {
 				process_left();
 			} else {
 				process_right();
 			}
-		}
+
 
 		/* USER CODE END WHILE */
 		/* USER CODE BEGIN 3 */
@@ -323,13 +325,14 @@ static void MX_GPIO_Init(void) {
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
-	led_init_1.frame_status = WRITE_RIGHT;
-	led_init_1.write_complete = false;
+
+			led_init_1.frame_status = WRITE_RIGHT;
+
 }
 
 void process_left() {
 
-	static UINT32_RGB _rgb = { { 0, 255, 255, 255 } };
+	static UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 	led_init_1.cursor = led_init_1.ptr_left_start;
 
 	while (led_init_1.cursor < led_init_1.ptr_left_end) {
@@ -337,13 +340,13 @@ void process_left() {
 		led_init_1.cursor += 24;
 	}
 	led_init_1.cursor = led_init_1.ptr_right_start;
-	led_init_1.write_complete = true;
+
 
 }
 
 void process_right(){
 
-	static UINT32_RGB _rgb = { { 0, 1, 1, 1 } };
+	static UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 	led_init_1.cursor = led_init_1.ptr_right_start;
 
 	while (led_init_1.cursor < led_init_1.ptr_right_end) {
@@ -351,13 +354,15 @@ void process_right(){
 		led_init_1.cursor += 24;
 	}
 	led_init_1.cursor = led_init_1.ptr_left_start;
-	led_init_1.write_complete = true;
+
 }
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *dma) {
 
-	led_init_1.frame_status = WRITE_LEFT;
-	led_init_1.write_complete = true;
+
+		led_init_1.frame_status = WRITE_LEFT;
+
+
 
 }
 
@@ -367,9 +372,9 @@ void WS2812_send(uint32_t *color, uint16_t *cursor) {
 	uint16_t *_cursor = cursor;
 	uint16_t i;
 
-	for(i = 1;i <= 24;++i){
+	for(i = 32;i >= 8;--i){
 		*_cursor =
-				(varGetBit((*color), (i))) ? TIM_COMPARE_HIGH : TIM_COMPARE_LOW;
+				(varGetBit((*color), (i))) ? TIM_COMPARE_LOW : TIM_COMPARE_HIGH;
 		_cursor++;
 
 	}
