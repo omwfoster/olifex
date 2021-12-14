@@ -147,9 +147,9 @@ int main(void)
 
 	HAL_TIM_Base_Start(&htim3);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*)   output_array,
-			(sizeof(  output_array) / sizeof(uint16_t)));
 	HAL_TIM_Base_Start_IT(&htim4);
+	XRGB _xrgb = {0,0,0,0};
+	uint8_t g = 0;
 
 
 
@@ -162,6 +162,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1) {
 
+
+	for (g=0;g<=255;g++)
+	{
+		pixel_in_rgb.ptr_start->xRGB.red = g;
+		shift_frame(&pixel_in_rgb,1);
+	}
 
 
     /* USER CODE END WHILE */
@@ -386,6 +392,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
 		HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*)   output_array,
 				(sizeof(  output_array) / sizeof(uint16_t)));
+		__HAL_TIM_CLEAR_FLAG(&htim4, TIM_FLAG_UPDATE);
+
 
   }
 }

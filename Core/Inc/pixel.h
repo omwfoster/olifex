@@ -10,6 +10,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+
+
 #define NUMBER_OF_PIXELS    	    2
 #define WORDS_PER_PIXEL				24
 #define ZERO_PADDING 				52
