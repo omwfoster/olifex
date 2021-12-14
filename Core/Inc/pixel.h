@@ -12,9 +12,21 @@
 
 #define NUMBER_OF_PIXELS    	    2
 #define WORDS_PER_PIXEL				24
-#define NUMBER_OF_PIXELS_HALF  		(NUMBER_OF_PIXELS/2)
 #define ZERO_PADDING 				52
-#define BUFFER_LENGTH 				(((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING) * 2)
+#define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
+
+typedef struct {
+	uint16_t *output_buffer;
+	uint16_t *ptr_start;
+	uint16_t *ptr_end;
+	uint16_t *cursor;
+	enum {
+		OUTPUT, WAIT
+	} frame_status;
+
+
+
+} pwm_output_struct;
 
 
 typedef struct xRGB {
@@ -31,30 +43,44 @@ typedef union uint32_RGB
 	uint32_t  xUINT;
 } UINT32_RGB;
 
+typedef struct {
+	uint16_t length;
+	UINT32_RGB *ptr_start;
+	UINT32_RGB *ptr_end;
+	UINT32_RGB *cursor;
+	UINT32_RGB *cursor_up;
+	UINT32_RGB *cursor_down;
+	enum {
+		UP,DOWN
+	} frame_direction;
+
+
+} ws2812_rgb_struct;
+
 
 
 
 
 void drawFrame(UINT32_RGB *);
+void shift_frame(ws2812_rgb_struct * _ws_struct,uint16_t _magnitude );
+uint16_t calc_GCD(uint16_t a,uint16_t b);
+void set_color_GRB(XRGB *_Color, UINT32_RGB *_Pixel,uint32_t _len);
+void set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UINT32_RGB *_Color,uint32_t _loc);
+void write_output_buffer(uint32_t *color, uint16_t *cursor, uint16_t _len);
+
+
+
+
+
+
 void clearAll(void);
 void getPixelColor(int px_index, UINT32_RGB * px_color);
-void setPixel_GRB(XRGB * _Color, UINT32_RGB * _Pixel);
-void setAll_GRB(const UINT32_RGB * color);
+
 void setRange_GRB(const UINT32_RGB * color, int start_px_index, int len);
 void setColorBrightness(const UINT32_RGB * in, UINT32_RGB * out, float brightness);
 
 
-void RunningLights(const UINT32_RGB * c, int delay_ms, float time_s);
-void FadeInOut(const UINT32_RGB * c, int delay_ms, float time_s);
-void CyloneBounce(const UINT32_RGB *c,int eye_size);
-void Twinkle(const UINT32_RGB *c, int delay_ms, int count, bool clear);
-void ColorWipe(const UINT32_RGB * c, int delay_ms, bool reverse);
-void RainbowCycle(int delay_ms, int cycle_num);
-void TheatreChase(const UINT32_RGB * c, int delay_ms, int cycle_num);
-void TheatreChaseRainbow(int delay_ms, int cycle_num);
-void Fire(int cooling_rate, int sparking_rate, int delay_ms);
-void meteorRain(const UINT32_RGB * c, uint8_t meteorSize, uint8_t meteorTrailDecay, bool meteorRandomDecay, int delay_ms);
-void HalfBlink(const UINT32_RGB * c, int delay_ms);
+
 
 
 #endif /* INC_PIXEL_H_ */

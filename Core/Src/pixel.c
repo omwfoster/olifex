@@ -11,9 +11,20 @@
 #include <math.h>
 
 
+#define RAM_BASE 0x20000000
+#define RAM_BB_BASE 0x22000000
+#define Var_ResetBit_BB(VarAddr, BitNumber) (*(volatile uint32_t *) (RAM_BB_BASE | ((VarAddr - RAM_BASE) << 5) | ((BitNumber) << 2)) = 0)
+#define Var_SetBit_BB(VarAddr, BitNumber) (*(volatile uint32_t *) (RAM_BB_BASE | ((VarAddr - RAM_BASE) << 5) | ((BitNumber) << 2)) = 1)
+#define Var_GetBit_BB(VarAddr, BitNumber) (*(volatile uint32_t *) (RAM_BB_BASE | ((VarAddr - RAM_BASE) << 5) | ((BitNumber) << 2)))
+#define BITBAND_SRAM(address, bit) ( (__IO uint32_t *) (RAM_BB_BASE + (((uint32_t)address) - RAM_BASE) * 32 + (bit) * 4))
 
-static bool is_seed_set = false;
+#define varSetBit(var,bit) (Var_SetBit_BB((uint32_t)&var,bit))
+#define varResetBit(var,bit) (Var_ResetBit_BB((uint32_t)&var,bit))
+#define varGetBit(var,bit) (Var_GetBit_BB((uint32_t)&var,bit))
 
+
+#define TIM_COMPARE_HIGH	31
+#define TIM_COMPARE_LOW		70
 
 void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 		float amount) {
@@ -28,166 +39,91 @@ void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 	colourOut[2] = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
 }
 
-static void randomSeed(uint32_t seed)
+void set_color_GRB(XRGB *_Color, UINT32_RGB *_Pixel,uint32_t _len)
 {
-    if(seed != 0)
-    {
-        is_seed_set = true;
-        srand(seed);
-    }
+	static uint32_t i;
+	for(i  = 1; i <= _len;++i) {
+		_Pixel->xRGB = *_Color;
+		++_Pixel;
+	}
 }
 
-uint32_t random_gen(uint32_t a, uint32_t b)
-{
-   return (random() % (b-a)) + a;
-}
-
-void RunningLights(const UINT32_RGB *c, int delay_ms, float time_s)
-{
-    UINT32_RGB new_color;
-    int num_of_frames = time_s * 1000 / delay_ms;
-    for (int j = 0; j < num_of_frames; j++)
-    {
-        for (int i = 0; i < NUMBER_OF_PIXELS; i++)
-        {
-            setColorBrightness(c,&new_color,(sin(i + j) * 127 + 128) / 255.0);
-         //   setPixel_GRB(&new_color, i);
-        }
-    }
-}
-
-void FadeInOut(const UINT32_RGB *c, int delay_ms, float time_s)
-{
-    UINT32_RGB new_color;
-    if (time_s < 1.0)
-        time_s = 1.0;
-    int num_of_frames = time_s * 1000/delay_ms;
-    float k = num_of_frames - 1;
-    for (int i = 0; i < num_of_frames; i++)
-    {
-        setColorBrightness(c,&new_color,i/k);
-        setAll_GRB(&new_color);
-    }
-    for (int i = num_of_frames - 1; i >= 0; i--)
-    {
-        setColorBrightness(c,&new_color,i/k);
-        setAll_GRB(&new_color);
-
-    }
-}
-
-void Twinkle(const UINT32_RGB *c, int delay_ms, int count, bool clear)
-{}
-
-void CyloneBounce(const UINT32_RGB *c,int eye_size)
-{
-    int j = NUMBER_OF_PIXELS - (eye_size + 2);
-    UINT32_RGB faded_color;
-    setColorBrightness(c,&faded_color,0.1);
-    for (int i = 0; i < j; i++)
-    {
-        clearAll();
-     //   setPixel_GRB(&faded_color,i);
-        setRange_GRB(c,i+1,eye_size);
-     //   setPixel_GRB(&faded_color,i+eye_size+1);
+void set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UINT32_RGB *_Color,uint32_t _loc) {
 
 
-    }
+	if ((_ws_struct->length) > _loc){
+	_ws_struct->ptr_start[_loc] = *_Color;
+	}
 
-    for (int i = j; i >=0; i--)
-    {
-        clearAll();
-    //    setPixel_GRB(&faded_color,i);
-        setRange_GRB(c,i+1,eye_size);
-    //    setPixel_GRB(&faded_color,i+eye_size+1);
-
-    }
 
 }
 
-void ColorWipe(const UINT32_RGB *c, int delay_ms, bool reverse)
-{
-    if (reverse)
-    {
-        for (int i = NUMBER_OF_PIXELS-1; i >= 0; i--)
-        {
-        //    setPixel_GRB(c, i);
-        }
-    }
-    else
-    {
-        for (int i = 0; i < NUMBER_OF_PIXELS; i++)
-        {
-       //     setPixel_GRB(c, i);
-        }
-    }
-}
+void write_output_buffer(uint32_t *color, uint16_t *cursor, uint16_t _len) {
 
+	uint16_t *_cursor = cursor;
+	uint16_t i;
 
+	for (i = 32; i >= 8; --i) {
+		*_cursor =
+				(varGetBit((*color), (i))) ? TIM_COMPARE_LOW : TIM_COMPARE_HIGH;
+		_cursor++;
 
-void RainbowCycle(int delay_ms, int cycle_num)
-{
-    UINT32_RGB color;
-    for(int i=0; i<256 * cycle_num; i++)
-    {
-        for(int j=0; j < NUMBER_OF_PIXELS; j++)
-        {
-      //      Wheel(&color, ((j * 256 / NUMBER_OF_PIXELS) + i) & 0xff);
-         //   setPixel_GRB(&color, j);
-        }
-    }
-}
-
-void TheatreChase(const UINT32_RGB * c, int delay_ms, int cycle_num)
-{
-    for(int i=0; i<cycle_num; i++)
-    {
-        for(int q=0;q<3;q++)
-        {
-            clearAll();
-            for(int j=0; (j+q)< NUMBER_OF_PIXELS; j+=3)
-            {
-        //        setPixel_GRB(c,j+q);
-            }
-        }
-    }
-}
-
-void TheatreChaseRainbow(int delay_ms, int cycle_num)
-{
-    UINT32_RGB color;
-    for(int i=0; i< 256 * cycle_num; i++)
-    {
-        for(int q=0;q<3;q++)
-        {
-            clearAll();
-            for(int j=0; j< NUMBER_OF_PIXELS; j+=3)
-            {
-   //             Wheel(&color,(i+j) % 255);
-           //     setPixel_GRB(&color,j+q);
-            }
-        //    wait_ms(delay_ms);
-        }
-    }
-}
-
-
-void HalfBlink(const UINT32_RGB * c, int delay_ms)
-{
-    clearAll();
-    setRange_GRB(c,0,NUMBER_OF_PIXELS/2);
-//   wait_ms(delay_ms);
-    clearAll();
-    setRange_GRB(c, NUMBER_OF_PIXELS/2, NUMBER_OF_PIXELS/2);
- //   wait_ms(delay_ms);
-}
-
-
-
-
-void setPixel_GRB(XRGB * _Color, UINT32_RGB * _Pixel)
-{
-
-	_Pixel->xRGB=* _Color;
+	}
 
 }
+
+void shift_frame(ws2812_rgb_struct *_ws_struct, uint16_t _magnitude)
+{
+
+	UINT32_RGB _xrgb;
+
+	if(_ws_struct->length <= 1 || !_magnitude) return;
+	_magnitude = _magnitude %  _ws_struct->length;
+
+	uint16_t i, j, k ,_gcd = calc_GCD(_ws_struct->length, _magnitude);
+
+	  for(i = 0; i < _gcd; i++) {
+		  _xrgb =  _ws_struct->ptr_start[i];
+	    for(j = i; 1; j = k) {
+	      k = j+_magnitude;
+
+	      if(k >= _ws_struct->length) k -= _ws_struct->length;
+	      if(k == i) break;
+	      _ws_struct->ptr_start[j]=_ws_struct->ptr_start[k] ;
+	    }
+	    _ws_struct->ptr_start[j] = _xrgb;
+	  }
+
+	_ws_struct->cursor = _ws_struct->ptr_start;
+
+
+}
+
+// Get Greatest Common Divisor using binary GCD algorithm
+// http://en.wikipedia.org/wiki/Binary_GCD_algorithm
+uint16_t calc_GCD(uint16_t a,uint16_t b)
+{
+  uint16_t shift, tmp;
+
+  if(a == 0) return b;
+  if(b == 0) return a;
+
+  // Find power of two divisor
+  for(shift = 0; ((a | b) & 1) == 0; shift++) { a >>= 1; b >>= 1; }
+
+  // Remove remaining factors of two from a - they are not common
+  while((a & 1) == 0) a >>= 1;
+
+  do
+  {
+    // Remove remaining factors of two from b - they are not common
+    while((b & 1) == 0) b >>= 1;
+
+    if(a > b) { tmp = a; a = b; b = tmp; } // swap a,b
+    b = b - a;
+  }
+  while(b != 0);
+
+  return a << shift;
+}
+
