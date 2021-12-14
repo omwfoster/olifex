@@ -148,7 +148,7 @@ int main(void)
 	HAL_TIM_Base_Start(&htim3);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 	HAL_TIM_Base_Start_IT(&htim4);
-	XRGB _xrgb = {0,0,0,0};
+
 	uint8_t g = 0;
 
 
@@ -316,17 +316,14 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 28-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 6000-1;
+  htim4.Init.Period = 6000;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_ETRMODE2;
-  sClockSourceConfig.ClockPolarity = TIM_CLOCKPOLARITY_NONINVERTED;
-  sClockSourceConfig.ClockPrescaler = TIM_CLOCKPRESCALER_DIV1;
-  sClockSourceConfig.ClockFilter = 0;
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
   {
     Error_Handler();
@@ -370,7 +367,6 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
 
 }
 
@@ -392,7 +388,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
 		HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*)   output_array,
 				(sizeof(  output_array) / sizeof(uint16_t)));
-		__HAL_TIM_CLEAR_FLAG(&htim4, TIM_FLAG_UPDATE);
+//		__HAL_TIM_CLEAR_FLAG(&htim4, TIM_FLAG_UPDATE);
 
 
   }
