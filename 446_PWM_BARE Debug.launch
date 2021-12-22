@@ -61,7 +61,7 @@
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;&gt;&#13;&#10;&lt;gdbmemoryBlockExpression address=&quot;536870968&quot; label=&quot;ws2812&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
+<stringAttribute key="org.eclipse.dsf.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#13;&#10;&lt;memoryBlockExpressionList context=&quot;reserved-for-future-use&quot;&gt;&#13;&#10;&lt;gdbmemoryBlockExpression address=&quot;536870952&quot; label=&quot;output_array&quot;/&gt;&#13;&#10;&lt;gdbmemoryBlockExpression address=&quot;536872152&quot; label=&quot;0x200004d8&quot;/&gt;&#13;&#10;&lt;/memoryBlockExpressionList&gt;&#13;&#10;"/>
 <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
-<stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="ws2812,varGetBit(color,i),0,0x22000000,_rgb,_cursor,pixel_array"/>
+<stringAttribute key="saved_expressions&lt;seperator&gt;Unknown" value="ws2812,varGetBit(color,i),0,0x22000000,_rgb,_cursor,pixel_array,pixel_out_pwm,_ws_struct-&gt;ptr_start[j]"/>
 </launchConfiguration>

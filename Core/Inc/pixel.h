@@ -10,10 +10,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
-
-
-#define NUMBER_OF_PIXELS    	    2
+#define NUMBER_OF_PIXELS    	    1
 #define WORDS_PER_PIXEL				24
 #define ZERO_PADDING 				52
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
@@ -24,7 +21,7 @@ typedef struct {
 	uint16_t *ptr_end;
 	uint16_t *cursor;
 	enum {
-		OUTPUT, WAIT
+		LOCKED, WAITING
 	} frame_status;
 
 
@@ -63,8 +60,8 @@ typedef struct {
 
 
 
-
-void drawFrame(UINT32_RGB *);
+void write_frame_to_output(ws2812_rgb_struct *,pwm_output_struct *);
+void write_pixel_to_output(uint32_t *color, uint16_t *cursor);
 void shift_frame(ws2812_rgb_struct * _ws_struct,uint16_t _magnitude );
 uint16_t calc_GCD(uint16_t a,uint16_t b);
 void set_color_GRB(XRGB *_Color, UINT32_RGB *_Pixel,uint32_t _len);
@@ -74,13 +71,12 @@ void write_output_buffer(uint32_t *color, uint16_t *cursor, uint16_t _len);
 
 
 
-
-
+////////////////////////////////////////////////////////////////////////
 void clearAll(void);
 void getPixelColor(int px_index, UINT32_RGB * px_color);
-
 void setRange_GRB(const UINT32_RGB * color, int start_px_index, int len);
 void setColorBrightness(const UINT32_RGB * in, UINT32_RGB * out, float brightness);
+////////////////////////////////////////////////////////////////////////
 
 
 
