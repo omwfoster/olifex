@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
 #include "pixel.h"
 
 /* USER CODE END Includes */
@@ -51,10 +51,6 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 /* USER CODE BEGIN PV */
 
-#define TIM_PERIOD			105
-#define TIM_COMPARE_HIGH	31
-#define TIM_COMPARE_LOW		70
-
 uint16_t output_array[BUFFER_LENGTH] = { 0 };
 pwm_output_struct pixel_out_pwm;
 
@@ -73,6 +69,8 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 
 void send_frame();
+void test_frame();
+void add_pixel_and_scroll();
 
 /* USER CODE END PFP */
 
@@ -83,8 +81,8 @@ void init_pwm_output_struct(uint16_t *_array, pwm_output_struct *_init) {
 
 	_init->output_buffer = output_array;
 	_init->ptr_start = &_array[ZERO_PADDING];
-	_init->ptr_end =
-			&_array[(NUMBER_OF_PIXELS * WORDS_PER_PIXEL) + ZERO_PADDING];
+	_init->length = ((NUMBER_OF_PIXELS * WORDS_PER_PIXEL) + ZERO_PADDING);
+	_init->ptr_end = &_init->output_buffer[_init->length];
 	_init->frame_status = WAITING;
 	_init->cursor = _array;
 
@@ -135,6 +133,7 @@ int main(void) {
 	MX_TIM4_Init();
 	/* USER CODE BEGIN 2 */
 
+	memset(output_array, 0, sizeof(output_array));
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
 	init_ws2812_rgb_struct(pixel_array, &pixel_in_rgb);
 
@@ -147,25 +146,16 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 
-	uint8_t g = 0;
-
 	while (1) {
 
-			if (pixel_out_pwm.frame_status == WAITING){
-
-		//		for (g = 0; g <= 20; g++) {
-
-		//			pixel_in_rgb.ptr_start->xRGB.red = 122;
-		//					shift_frame(&pixel_in_rgb, 1);
-
-		//			write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
-
+		if (pixel_out_pwm.frame_status == WAITING) {
+			//	test_frame();
+			add_pixel_and_scroll();
+		}
 		/* USER CODE END WHILE */
-		//	pixel_out_pwm.frame_status = LOCKED;
-		send_frame();
 
 		/* USER CODE BEGIN 3 */
-			}
+
 		/* USER CODE END 3 */
 	}
 }
@@ -267,7 +257,7 @@ static void MX_TIM3_Init(void) {
 		Error_Handler();
 	}
 	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 0;
+	sConfigOC.Pulse = 50;
 	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3)
@@ -355,7 +345,7 @@ static void MX_GPIO_Init(void) {
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
-	HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_3);
+//	HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_3);
 	pixel_out_pwm.frame_status = WAITING;
 
 }
@@ -373,9 +363,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 }
 
+//
+
 void write_pixel() {
 
-	static UINT32_RGB _rgb = { { 0, 0, 0, 24 } };
 	pixel_in_rgb.cursor = pixel_in_rgb.ptr_start;
 
 	while (pixel_in_rgb.cursor < pixel_in_rgb.ptr_end) {
@@ -385,12 +376,48 @@ void write_pixel() {
 
 }
 
+// Add a pixel to the front, and then rotate
+// pixel[n]  =>  pixel[0]
+// copy every other pixel left
+
+void add_pixel_and_scroll() {
+
+	pixel_in_rgb.ptr_start->xRGB.red = 22;
+	shift_frame(&pixel_in_rgb, 1);
+	write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
+	pixel_out_pwm.frame_status = LOCKED;
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) &output_array,
+			(sizeof(output_array) / sizeof(uint16_t)));
+}
+
+// sends a complete frame through dma channel As is.
+// output buffer is not modified
+
 void send_frame() {
 
 	pixel_out_pwm.frame_status = LOCKED;
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3,
-			(uint32_t*) &pixel_out_pwm.output_buffer,
+
+}
+
+// sends a complete frame through dma channel
+// each element is set to 50, for 50% duty cycle
+// output_array is accessed directly
+
+void test_frame() {
+
+	pixel_out_pwm.frame_status = LOCKED;
+	for (uint16_t i = ZERO_PADDING; i <= pixel_out_pwm.length; ++i) {
+		pixel_out_pwm.output_buffer[i] = TIM_COMPARE_HIGH;
+	}
+
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) &output_array,
 			(sizeof(output_array) / sizeof(uint16_t)));
+
+}
+
+void clear_frame()
+
+{
 
 }
 

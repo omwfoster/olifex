@@ -74,12 +74,12 @@ void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 	_rgb_struct->cursor = _rgb_struct->ptr_start;
 	_pwm_struct->cursor = _pwm_struct->ptr_start;
 
-	while (_rgb_struct->cursor <= (_rgb_struct->ptr_end)) {
+	while (_rgb_struct->cursor < (_rgb_struct->ptr_end)) {
 
 		for (uint8_t i = 32; i >= 8; --i) {
-			if (_rgb_struct->cursor <= _rgb_struct->ptr_end) {
+			if (_pwm_struct->cursor < _pwm_struct->ptr_end) {
 				*_pwm_struct->cursor =
-						(varGetBit((_rgb_struct->cursor), (i))) ?
+						(varGetBit((_rgb_struct->cursor), (i))|1U) ?
 								TIM_COMPARE_LOW : TIM_COMPARE_HIGH;
 				_pwm_struct->cursor++;
 			}

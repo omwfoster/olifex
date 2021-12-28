@@ -10,15 +10,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define NUMBER_OF_PIXELS    	    1
+
+#define TIM_PERIOD			105
+#define TIM_COMPARE_HIGH	31
+#define TIM_COMPARE_LOW		70
+
+#define NUMBER_OF_PIXELS    	    2
 #define WORDS_PER_PIXEL				24
-#define ZERO_PADDING 				52
+#define ZERO_PADDING 				300
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
 
 typedef struct {
 	uint16_t *output_buffer;
 	uint16_t *ptr_start;
 	uint16_t *ptr_end;
+	uint16_t length;
 	uint16_t *cursor;
 	enum {
 		LOCKED, WAITING
