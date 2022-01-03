@@ -21,8 +21,7 @@
 #define varResetBit(var,bit) (Var_ResetBit_BB((uint32_t)&var,bit))
 #define varGetBit(var,bit) (Var_GetBit_BB((uint32_t)&var,bit))
 
-#define TIM_COMPARE_HIGH	31
-#define TIM_COMPARE_LOW		70
+
 
 void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 		float amount) {
@@ -37,49 +36,32 @@ void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 	colourOut[2] = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
 }
 
-void set_color_GRB(XRGB *_Color, UINT32_RGB *_Pixel, uint32_t _len) {
-	static uint32_t i;
-	for (i = 1; i <= _len; ++i) {
-		_Pixel->xRGB = *_Color;
-		++_Pixel;
-	}
-}
+
 
 void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UINT32_RGB *_Color,
-		uint32_t _loc) {
+		uint32_t _pos) {
 
-	if ((_ws_struct->length) > _loc) {
-		_ws_struct->ptr_start[_loc] = *_Color;
-	}
-
-}
-
-void write_pixel_to_output(uint32_t *color, uint16_t *cursor) {
-
-	uint16_t *_cursor = cursor;
-	uint16_t i;
-
-	for (i = 32; i >= 8; --i) {
-		*_cursor =
-				(varGetBit((*color), (i))) ? TIM_COMPARE_LOW : TIM_COMPARE_HIGH;
-		_cursor++;
-
-	}
+	_ws_struct->cursor    =   _ws_struct->ptr_start;
+	_ws_struct->cursor   +=   _pos;
+	* _ws_struct->cursor  = * _Color;
 
 }
+
+
 
 void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 		pwm_output_struct *_pwm_struct) {
 
 	_rgb_struct->cursor = _rgb_struct->ptr_start;
 	_pwm_struct->cursor = _pwm_struct->ptr_start;
+	UINT32_RGB _rgb;
 
-	while (_rgb_struct->cursor < (_rgb_struct->ptr_end)) {
+	while (_rgb_struct->cursor <= (_rgb_struct->ptr_end)) {
 
 		for (uint8_t i = 32; i >= 8; --i) {
 			if (_pwm_struct->cursor < _pwm_struct->ptr_end) {
-				*_pwm_struct->cursor =
-						(varGetBit((_rgb_struct->cursor), (i))|1U) ?
+				_rgb = *_rgb_struct->cursor;
+				*_pwm_struct->cursor  =  (_rgb.xUINT  & (1<<i))?
 								TIM_COMPARE_LOW : TIM_COMPARE_HIGH;
 				_pwm_struct->cursor++;
 			}
