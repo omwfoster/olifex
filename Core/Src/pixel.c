@@ -58,7 +58,7 @@ void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 
 	while (_rgb_struct->cursor <= (_rgb_struct->ptr_end)) {
 
-		for (uint8_t i = 32; i >= 8; --i) {
+		for (uint8_t i = 0; i <= 23; ++i) {
 			if (_pwm_struct->cursor < _pwm_struct->ptr_end) {
 				_rgb = *_rgb_struct->cursor;
 				*_pwm_struct->cursor  =  (_rgb.xUINT  & (1<<i))?

@@ -44,15 +44,13 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CRC_HandleTypeDef hcrc;
-
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 DMA_HandleTypeDef hdma_tim3_ch3;
 
 /* USER CODE BEGIN PV */
 
-uint16_t output_array[BUFFER_LENGTH]  __attribute__ ((aligned (4)));
+uint16_t output_array[BUFFER_LENGTH] __attribute__ ((aligned (4)));
 pwm_output_struct pixel_out_pwm;
 
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
@@ -66,7 +64,6 @@ uint8_t t_startup = 1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_CRC_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
@@ -101,6 +98,31 @@ void init_ws2812_rgb_struct(UINT32_RGB *_array, ws2812_rgb_struct *_init) {
 	_init->frame_direction = UP;
 
 }
+
+void reset_gpio_pwm(TIM_HandleTypeDef *htim) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	if (htim->Instance == TIM3) {
+		/* USER CODE BEGIN TIM3_MspPostInit 0 */
+
+		/* USER CODE END TIM3_MspPostInit 0 */
+
+		__HAL_RCC_GPIOC_CLK_ENABLE();
+		/**TIM3 GPIO Configuration
+		 PC8     ------> TIM3_CH3
+		 */
+		GPIO_InitStruct.Pin = GPIO_PIN_8;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_PULLUP;
+		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+		HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+		/* USER CODE BEGIN TIM3_MspPostInit 1 */
+
+		/* USER CODE END TIM3_MspPostInit 1 */
+	}
+
+}
 /* USER CODE END 0 */
 
 /**
@@ -110,6 +132,11 @@ void init_ws2812_rgb_struct(UINT32_RGB *_array, ws2812_rgb_struct *_init) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	memset(&htim3,0,sizeof(htim3));
+	memset(&htim4,0,sizeof(htim4));
+	memset(&hdma_tim3_ch3,0,sizeof(hdma_tim3_ch3));
+
+
 
   /* USER CODE END 1 */
   
@@ -133,7 +160,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_CRC_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
@@ -144,8 +170,13 @@ int main(void)
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
 	init_ws2812_rgb_struct(pixel_array, &pixel_in_rgb);
 
-	HAL_TIM_Base_Start(&htim3);
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
+	reset_gpio_pwm(&htim3);
+
+	if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3) != HAL_OK) {
+		/* Starting Error */
+		Error_Handler();
+	}
 
 	if (t_startup == 1) {
 		send_frame();
@@ -160,7 +191,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	UINT32_RGB test_rgb = { { 0, 255, 0, 255 } };
+	UINT32_RGB test_rgb = { { 255, 255, 255, 0 } };
 
 	while (1) {
 
@@ -223,32 +254,6 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief CRC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_CRC_Init(void)
-{
-
-  /* USER CODE BEGIN CRC_Init 0 */
-
-  /* USER CODE END CRC_Init 0 */
-
-  /* USER CODE BEGIN CRC_Init 1 */
-
-  /* USER CODE END CRC_Init 1 */
-  hcrc.Instance = CRC;
-  if (HAL_CRC_Init(&hcrc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CRC_Init 2 */
-
-  /* USER CODE END CRC_Init 2 */
-
-}
-
-/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -282,10 +287,10 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_PWM2;
   sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
@@ -369,7 +374,6 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
 
 }
 
@@ -378,8 +382,6 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 
 	HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_3);
-
-
 
 	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
 	pixel_out_pwm.frame_status = WAITING;
@@ -417,6 +419,7 @@ void send_frame() {
 	//htim3.Init.Period = output_array[0];
 	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) output_array,
 			(sizeof(output_array) / sizeof(uint16_t)));
+
 
 }
 
