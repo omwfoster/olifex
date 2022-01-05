@@ -15,9 +15,9 @@
 #define TIM_COMPARE_HIGH	16
 #define TIM_COMPARE_LOW		35
 
-#define NUMBER_OF_PIXELS    	    20
+#define NUMBER_OF_PIXELS    	    5
 #define WORDS_PER_PIXEL				24
-#define ZERO_PADDING 				60
+#define ZERO_PADDING 				300
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
 
 typedef struct {
