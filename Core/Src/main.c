@@ -194,7 +194,6 @@ int main(void)
 	UINT32_RGB test_rgb = { { 255, 255, 255, 0 } };
 
 	while (1) {
-
 		if (hdma_tim3_ch3.State == HAL_DMA_STATE_READY) {
 			for (uint16_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
 				set_pixel_GRB(&pixel_in_rgb, &test_rgb, i);
