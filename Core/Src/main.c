@@ -24,8 +24,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
-
+#include "tables.h"
 #include "pixel.h"
+#include "effects.h"
 
 /* USER CODE END Includes */
 
@@ -161,7 +162,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_TIM3_Init();
-  MX_TIM4_Init();
+//  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
 	memset(output_array, 0, sizeof(output_array));
@@ -171,12 +172,17 @@ int main(void)
 	init_ws2812_rgb_struct(pixel_array, &pixel_in_rgb);
 
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
+
 	reset_gpio_pwm(&htim3);
 
 	if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3) != HAL_OK) {
 		/* Starting Error */
 		Error_Handler();
 	}
+
+
+
+
 
 	if (t_startup == 1) {
 		send_frame();
@@ -191,16 +197,29 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	UINT32_RGB test_rgb = { { 255, 255, 255, 0 } };
+
+	UINT32_RGB test_rgb = { { 0 , 0 , 0, 0 } };
+
+	uint16_t rgb_offset = 0;
 
 	while (1) {
-		if (hdma_tim3_ch3.State == HAL_DMA_STATE_READY) {
-			for (uint16_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
-				set_pixel_GRB(&pixel_in_rgb, &test_rgb, i);
-			}
-			write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
-			send_frame();
+
+
+		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&&(rgb_offset<=20)) {
+		for (uint8_t i = 0 ; i < NUMBER_OF_PIXELS; ++i) {
+			test_rgb.xUINT = color_wheel(rgb_offset);
+			set_pixel_GRB(&pixel_in_rgb, &test_rgb, i);
+			rgb_offset<NUMBER_OF_PIXELS?rgb_offset++:0;
 		}
+		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
+		send_frame();
+	}
+
+
+
+
+
+
 	}
     /* USER CODE END WHILE */
 
@@ -390,12 +409,11 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 // Callback: timer has rolled over
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	// Check which version of the timer triggered this callback and toggle LED
+
+
 	if (htim == &htim4) {
 
-		pixel_out_pwm.frame_status = LOCKED;
-		HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3,
-				(uint32_t*) &pixel_out_pwm.output_buffer,
-				(sizeof(output_array) / sizeof(uint16_t)));
+
 
 	}
 }

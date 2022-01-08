@@ -15,7 +15,7 @@
 #define TIM_COMPARE_HIGH	16
 #define TIM_COMPARE_LOW		35
 
-#define NUMBER_OF_PIXELS    	    60
+#define NUMBER_OF_PIXELS    	    40
 #define WORDS_PER_PIXEL				24
 #define ZERO_PADDING 				300
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
@@ -39,7 +39,7 @@ typedef struct xRGB {
 	uint8_t blue;
 	uint8_t red;
 	uint8_t green;
-	uint8_t unused;
+	uint8_t alpha;
 }XRGB;
 
 
