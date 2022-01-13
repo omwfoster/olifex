@@ -45,6 +45,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2S_HandleTypeDef hi2s2;
+I2S_HandleTypeDef hi2s3;
+
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 DMA_HandleTypeDef hdma_tim3_ch3;
@@ -58,6 +61,7 @@ UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
 ws2812_rgb_struct pixel_in_rgb;
 
 uint8_t t_startup = 1;
+bool frame_tick = false;
 
 /* USER CODE END PV */
 
@@ -67,6 +71,8 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+//static void MX_I2S2_Init(void);
+//static void MX_I2S3_Init(void);
 /* USER CODE BEGIN PFP */
 
 void send_frame();
@@ -137,11 +143,8 @@ int main(void)
 	memset(&htim4,0,sizeof(htim4));
 	memset(&hdma_tim3_ch3,0,sizeof(hdma_tim3_ch3));
 
-
-
   /* USER CODE END 1 */
   
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -162,7 +165,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_TIM3_Init();
-//  MX_TIM4_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
 	memset(output_array, 0, sizeof(output_array));
@@ -181,7 +184,10 @@ int main(void)
 	}
 
 
-
+	if (HAL_TIM_Base_Start_IT(&htim4) != HAL_OK) {
+		/* Starting Error */
+		Error_Handler();
+	}
 
 
 	if (t_startup == 1) {
@@ -189,7 +195,7 @@ int main(void)
 		t_startup = 0;
 
 	}
-	// HAL_TIM_Base_Start_IT(&htim4);
+
 
   /* USER CODE END 2 */
  
@@ -198,27 +204,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-	UINT32_RGB test_rgb = { { 0 , 0 , 0, 0 } };
 
-	uint16_t rgb_offset = 0;
 
 	while (1) {
 
 
-		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&&(rgb_offset<=20)) {
-		for (uint8_t i = 0 ; i < NUMBER_OF_PIXELS; ++i) {
-			test_rgb.xUINT = color_wheel(rgb_offset);
-			set_pixel_GRB(&pixel_in_rgb, &test_rgb, i);
-			rgb_offset<NUMBER_OF_PIXELS?rgb_offset++:0;
-		}
+ 		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {
+		//colour_scroll(&pixel_in_rgb);
+ 		hsv_scroll(&pixel_in_rgb);
 		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
+		frame_tick = false;
 		send_frame();
 	}
-
-
-
-
-
 
 	}
     /* USER CODE END WHILE */
@@ -236,12 +233,13 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -256,7 +254,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -266,6 +264,18 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S_APB1;
+  PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
+  PeriphClkInitStruct.PLLI2S.PLLI2SP = RCC_PLLI2SP_DIV2;
+  PeriphClkInitStruct.PLLI2S.PLLI2SM = 16;
+  PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+  PeriphClkInitStruct.PLLI2S.PLLI2SQ = 2;
+  PeriphClkInitStruct.PLLI2SDivQ = 1;
+  PeriphClkInitStruct.I2sApb1ClockSelection = RCC_I2SAPB1CLKSOURCE_PLLI2S;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -339,9 +349,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 28-1;
+  htim4.Init.Prescaler = 500-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 6000;
+  htim4.Init.Period = 500;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
@@ -365,10 +375,10 @@ static void MX_TIM4_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -392,6 +402,8 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
 }
 
@@ -410,23 +422,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *dma) {
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	// Check which version of the timer triggered this callback and toggle LED
 
-
 	if (htim == &htim4) {
-
-
-
+    frame_tick = true;
 	}
 }
 
-// Add a pixel to the front
 
-void test_pixel() {
-
-	pixel_in_rgb.ptr_start->xRGB.red = 30;
-	pixel_in_rgb.ptr_start->xRGB.green = 0;
-	pixel_in_rgb.ptr_start->xRGB.blue = 30;
-
-}
 
 // sends a complete frame through dma channel As is.
 // output buffer is not modified
@@ -440,21 +441,7 @@ void send_frame() {
 
 }
 
-// sends a complete frame through dma channel
-// each element is set to 50, for 50% duty cycle
-// output_array is accessed directly
 
-void test_frame() {
-
-	pixel_out_pwm.frame_status = LOCKED;
-	for (uint16_t i = ZERO_PADDING; i <= pixel_out_pwm.length; ++i) {
-		pixel_out_pwm.output_buffer[i] = TIM_COMPARE_HIGH;
-	}
-
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_3, (uint32_t*) &output_array,
-			(sizeof(output_array) / sizeof(uint16_t)));
-
-}
 
 /* USER CODE END 4 */
 
