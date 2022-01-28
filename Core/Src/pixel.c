@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+float TWO_PI = 3.14159 * 2;
+uint16_t map_xy[NUMBER_OF_PIXELS];
+
 
 
 void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
@@ -36,7 +39,80 @@ void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UINT32_RGB *_Color,
 
 }
 
+UINT32_RGB hsv2rgb(struct_HSV *_Color_HSV)
+{
 
+	UINT32_RGB _Color_RGB;
+
+	_Color_RGB.xRGB.red = 0 ;
+	_Color_RGB.xRGB.green = 0 ;
+	_Color_RGB.xRGB.blue = 0 ;
+
+
+	    if (_Color_HSV->hue == 0)
+	    {
+	    	_Color_RGB.xRGB.red = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	    	_Color_RGB.xRGB.green = _Color_RGB.xRGB.red;
+	    	_Color_RGB.xRGB.blue  = _Color_RGB.xRGB.red;
+
+	    }
+	    else
+	    {
+	        int16_t h = _Color_HSV->hue /600;
+	        int16_t f = ((_Color_HSV->hue %600)*1000)/600;
+	        int16_t p = (_Color_HSV->val *(1000-_Color_HSV->sat))/1000;
+	        int16_t q = (_Color_HSV->val*(1000-((_Color_HSV->sat*f)/1000)))/1000;
+	        int16_t t = (_Color_HSV->val*(1000-((_Color_HSV->sat*(1000-f))/1000)))/1000;
+
+	        switch (h)
+	        {
+	        case 0:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * t) / 1000);
+	        	_Color_RGB.xRGB.blue = (uint8_t)((255 * p) / 1000);
+	            break;
+
+	        case 1:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * q) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	        	_Color_RGB.xRGB.blue = (uint8_t)((255 * p) / 1000);
+	            break;
+
+	        case 2:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * p) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	        	_Color_RGB.xRGB.blue = (uint8_t)((255 * t) / 1000);
+	            break;
+
+	        case 3:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * p) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * q) / 1000);
+	        	_Color_RGB.xRGB.blue = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	            break;
+
+	        case 4:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * t) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * p) / 1000);
+	        	_Color_RGB.xRGB.blue = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	            break;
+
+	        case 5:
+
+	        	_Color_RGB.xRGB.red = (uint8_t)((255 * _Color_HSV->val) / 1000);
+	        	_Color_RGB.xRGB.green = (uint8_t)((255 * p) / 1000);
+	            _Color_RGB.xRGB.blue = (uint8_t)((255 * q) / 1000);
+	            break;
+
+	        }
+	    }
+	    return _Color_RGB;
+
+}
 
 void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 		pwm_output_struct *_pwm_struct) {
@@ -125,5 +201,50 @@ uint16_t calc_GCD(uint16_t a, uint16_t b) {
 	} while (b != 0);
 
 	return a << shift;
+}
+
+
+
+
+
+uint8_t fill_pixel_map()
+{
+
+	uint16_t i , j = 0;
+	if((!(NUMBER_OF_PIXELS%PIXEL_ROWS)==0))
+	{
+		for(i = 0;i<NUMBER_OF_PIXELS;i++)
+ 	    map_xy[i]=i;
+		return 0 ;
+	}
+
+
+    // Traverse through all rows
+    for (i = 1; i <= PIXEL_ROWS; i++) {
+
+        // If current row is even, print from
+        // left to right
+        if (i % 2 == 0) {
+            for (uint16_t j = 0; j < PIXEL_COLUMNS; j++)
+            	map_xy[i]=i;
+
+        // If current row is odd, print from
+        // right to left
+        } else {
+            for (uint16_t j = ((PIXEL_COLUMNS * i)-1) ; j >=  ((PIXEL_COLUMNS * (i-1)-1)); j--)
+            	map_xy[i]=j;
+        }
+    }
+
+	return 1;
+}
+
+
+
+uint16_t map_to_pixel(uint16_t i)
+{
+
+	return i<NUMBER_OF_PIXELS?map_xy[i]:0;
+
 }
 

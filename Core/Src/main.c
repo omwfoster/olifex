@@ -24,7 +24,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
-#include "tables.h"
 #include "pixel.h"
 #include "effects.h"
 
@@ -62,6 +61,11 @@ ws2812_rgb_struct pixel_in_rgb;
 
 uint8_t t_startup = 1;
 bool frame_tick = false;
+
+
+
+
+
 
 /* USER CODE END PV */
 
@@ -168,11 +172,21 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
+
+
+
+    init_effects(&anim1);
+    fill_pixel_map();
+
+
 	memset(output_array, 0, sizeof(output_array));
 	memset(pixel_array, 0, sizeof(pixel_array));
 
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
 	init_ws2812_rgb_struct(pixel_array, &pixel_in_rgb);
+
+
+
 
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 
@@ -210,8 +224,10 @@ int main(void)
 
 
  		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {
-		//colour_scroll(&pixel_in_rgb);
+
  		hsv_scroll(&pixel_in_rgb);
+ 		hsv_wave(&pixel_in_rgb);
+ 		fire_fill(&pixel_in_rgb);
 		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
 		frame_tick = false;
 		send_frame();
@@ -349,9 +365,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 500-1;
+  htim4.Init.Prescaler = 240-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 500;
+  htim4.Init.Period = 20;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

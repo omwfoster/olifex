@@ -10,40 +10,52 @@
 
 #include "pixel.h"
 #include "math.h"
+#include "tables.h"
+#include "stdbool.h"
+#include "string.h"
+
+
+
+#define CLAMP(a,b) \
+    ({ \
+        const typeof (a) _a = (a); \
+        const typeof (b) _b = (b); \
+        (_a > _b ? _a : _b); \
+    })
+
+typedef struct Xanimate {
+	uint16_t hue_offset;
+	uint16_t sat_offset;
+	uint16_t val_offset;
+	uint16_t pos_offset;
+	uint16_t number_pixels;
+	bool	 direction;
+
+}animate_typedef;
+
+extern animate_typedef  anim1;
+
+
+
 
 
 #define DIM(c)     (uint32_t)((c >> 2) & 0x3f3f3f3f) // color at 25% intensity
 #define DARK(c)    (uint32_t)((c >> 4) & 0x0f0f0f0f) // color at  6% intensity
 
-void pixel_sine(ws2812_rgb_struct *_ws_struct);
 
 
-#define HEARTBEAT_STEPS		16
-
-void stripEffect_CircularRing(uint32_t interval, uint8_t red, uint8_t green,
-		uint8_t blue);
-void stripEffect_HeartBeat(uint32_t interval, uint8_t red, uint8_t green,
-		uint8_t blue);
-void stripEffect_ColorWheel(uint32_t interval);
-void stripEffect_AllColors(uint32_t interval);
-void stripEffect_PatternMove(uint32_t interval, uint32_t parts, uint8_t red,
-		uint8_t green, uint8_t blue);
-void stripEffect_FullEmpty(uint32_t interval, uint8_t red, uint8_t green,
-		uint8_t blue);
-void stripEffect_FromTo(uint32_t interval, uint32_t steps, uint8_t redA,
-		uint8_t greenA, uint8_t blueA, uint8_t redB, uint8_t greenB,
-		uint8_t blueB);
-void stripEffect_AlternateColors(uint32_t interval, uint32_t steps,
-		uint8_t redA, uint8_t greenA, uint8_t blueA, uint8_t redB,
-		uint8_t greenB, uint8_t blueB);
-
-void colour_scroll(ws2812_rgb_struct *_rgb_struct);
-void hsv_scroll(ws2812_rgb_struct *_rgb_struct);
-void shift_offset();
-
+void init_effects(animate_typedef * ani);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);
+void rgb_scroll(ws2812_rgb_struct *_rgb_struct);
+void hsv_scroll(ws2812_rgb_struct *_rgb_struct);
+void hsv_wave(ws2812_rgb_struct *_ws_struct);
+void fire_fill(ws2812_rgb_struct *_ws_struct);
+void heat_color(UINT32_RGB * _rgb, uint8_t temperature);
+void shift_offset();
+
+
 
 
 #endif /* INC_EFFECTS_H_ */
