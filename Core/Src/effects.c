@@ -7,6 +7,9 @@ animate_typedef anim1;
 
 
 
+
+
+
 float mapf(float value, float c_min, float c_max, float t_min, float t_max) {
     return (value - c_min) / (c_max - c_min) * (t_max - t_min) + t_min;
 }
