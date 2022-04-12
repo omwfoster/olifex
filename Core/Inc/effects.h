@@ -35,6 +35,19 @@ typedef struct Xanimate {
 
 extern animate_typedef  anim1;
 
+typedef void (*func)(ws2812_rgb_struct *rgb_struct);
+
+typedef struct dispatch_entry{
+	func fp,
+	char name[8]
+}dispatch_entry;
+
+
+typedef struct dispatch_table{
+	uint8_t n_fx,
+	dispatch_entry ptr_fx
+};
+
 
 
 
