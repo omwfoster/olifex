@@ -3,7 +3,7 @@
  */
 #include "effects.h"
 
-animate_typedef anim1;
+fx_config fx_cfg1;
 
 
 
@@ -21,46 +21,46 @@ float bound(float value, float max, float min) {
 
 
 
-void init_effects(animate_typedef *ani) {
+void init_effects(fx_config *p_fx) {
 
-	ani->hue_offset = 0;
-	ani->sat_offset = 0;
-	ani->val_offset = 0;
-	ani->pos_offset = 0;
-	ani->number_pixels = NUMBER_OF_PIXELS;
-	ani->direction = true;
+	p_fx->hue_offset = 0;
+	p_fx->sat_offset = 0;
+	p_fx->val_offset = 0;
+	p_fx->pos_offset = 0;
+	p_fx->number_pixels = NUMBER_OF_PIXELS;
+	p_fx->direction = true;
 
 }
 
-void shift_hue() {
-	if (anim1.hue_offset < 3600) {
-		anim1.hue_offset++;
+void shift_hue(fx_config *p_fx) {
+	if (p_fx->hue_offset < 3600) {
+		p_fx->hue_offset++;
 	} else {
-		anim1.hue_offset = 0;
+		p_fx->hue_offset = 0;
 	}
 }
 
-void shift_sat() {
-	if (anim1.sat_offset < 1000) {
-		anim1.sat_offset++;
+void shift_sat(fx_config *p_fx) {
+	if (p_fx->sat_offset < 1000) {
+		p_fx->sat_offset++;
 	} else {
-		anim1.sat_offset = 0;
+		p_fx->sat_offset = 0;
 	}
 }
 
-void shift_val() {
-	if (anim1.val_offset < 1000) {
-		anim1.val_offset++;
+void shift_val(fx_config *p_fx) {
+	if (p_fx->val_offset < 1000) {
+		p_fx->val_offset++;
 	} else {
-		anim1.val_offset = 0;
+		p_fx->val_offset = 0;
 	}
 }
 
-void shift_pos() {
-	if (anim1.pos_offset < 0xFFFF) {
-		anim1.pos_offset++;
+void shift_pos(fx_config *p_fx) {
+	if (p_fx->pos_offset < 0xFFFF) {
+		p_fx->pos_offset++;
 	} else {
-		anim1.pos_offset = 0;
+		p_fx->pos_offset = 0;
 	}
 }
 
@@ -94,19 +94,19 @@ void rgb_scroll(ws2812_rgb_struct *rgb_struct) {
 
 	uint32_t temp;
 	for (uint8_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
-		anim1.pos_offset < 0xFF ? anim1.pos_offset++ : 0;
-		temp = (color_wheel(anim1.pos_offset, 64));
+		fx_cfg1.pos_offset < 0xFF ? fx_cfg1.pos_offset++ : 0;
+		temp = (color_wheel(fx_cfg1.pos_offset, 64));
 		rgb.xUINT = temp;
 		set_pixel_GRB(rgb_struct, &rgb, i);
 	}
 
-	shift_pos();
+	shift_pos(&fx_cfg1);
 
 }
 
 void hsv_scroll(ws2812_rgb_struct *_rgb_struct) {
 
-	struct_HSV _hsv = { anim1.hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { fx_cfg1.hue_offset, 1000, 50, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 
 	for (uint16_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
@@ -115,13 +115,13 @@ void hsv_scroll(ws2812_rgb_struct *_rgb_struct) {
 		set_pixel_GRB(_rgb_struct, &_rgb, map_to_pixel(i));
 	}
 
-	shift_hue();
+	shift_hue(&fx_cfg1);
 
 }
 
 void hsv_wave(ws2812_rgb_struct *_rgb_struct) {
 
-	struct_HSV _hsv = { anim1.hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { fx_cfg1.hue_offset, 1000, 50, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 	uint8_t i_sin = 0;
 
@@ -133,7 +133,7 @@ void hsv_wave(ws2812_rgb_struct *_rgb_struct) {
 		i_sin < 255 ? i_sin++ : 0;
 	}
 
-	shift_hue();
+	shift_hue(&fx_cfg1);
 
 }
 

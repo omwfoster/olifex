@@ -175,7 +175,7 @@ int main(void)
 
 
 
-    init_effects(&anim1);
+    init_effects(&fx_cfg1);
     fill_pixel_map();
 
 

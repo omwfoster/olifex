@@ -23,7 +23,7 @@
         (_a > _b ? _a : _b); \
     })
 
-typedef struct Xanimate {
+typedef struct fx_config {
 	uint16_t hue_offset;
 	uint16_t sat_offset;
 	uint16_t val_offset;
@@ -31,22 +31,22 @@ typedef struct Xanimate {
 	uint16_t number_pixels;
 	bool	 direction;
 
-}animate_typedef;
+}fx_config;
 
-extern animate_typedef  anim1;
+extern fx_config  fx_cfg1;
 
-typedef void (*func)(ws2812_rgb_struct *rgb_struct);
+typedef void (*fx_fp)(ws2812_rgb_struct *rgb_struct);
 
-typedef struct dispatch_entry{
-	func fp,
-	char name[8]
+typedef struct fx_struct{
+	fx_fp fp;
+	char fx_name[8];
 }dispatch_entry;
 
 
 typedef struct dispatch_table{
-	uint8_t n_fx,
-	dispatch_entry ptr_fx
-};
+	uint8_t n_fx;
+	dispatch_entry fx_struct[];
+}dispatch_table;
 
 
 
@@ -57,7 +57,7 @@ typedef struct dispatch_table{
 
 
 
-void init_effects(animate_typedef * ani);
+void init_effects(fx_config * p_fx);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);
