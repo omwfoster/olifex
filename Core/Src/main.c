@@ -170,7 +170,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_UART4_Init();
+  olifex_serial_init();
   /* USER CODE BEGIN 2 */
 
 

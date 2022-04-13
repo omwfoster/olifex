@@ -11,7 +11,8 @@
 #include "stm32f4xx_hal.h"
 
 
-void MX_UART4_Init(void);
+void olifex_serial_init(void);
+void olifex_serial_transmit(char * msg_ptr,uint8_t msg_len);
 
 
 
