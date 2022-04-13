@@ -5,7 +5,7 @@
  *      Author: omwfo
  */
 
-#include "pixel.h"
+#include "olifex_pixel.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>

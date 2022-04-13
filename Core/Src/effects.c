@@ -1,7 +1,7 @@
 /*
 
  */
-#include "effects.h"
+#include "olifex_fx.h"
 
 fx_config fx_cfg1;
 

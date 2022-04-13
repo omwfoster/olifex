@@ -8,7 +8,7 @@
 #ifndef INC_EFFECTS_H_
 #define INC_EFFECTS_H_
 
-#include "pixel.h"
+#include <olifex_pixel.h>
 #include "math.h"
 #include "tables.h"
 #include "stdbool.h"
