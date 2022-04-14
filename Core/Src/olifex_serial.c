@@ -5,10 +5,14 @@
  *      Author: omwfo
  */
 
+#include "stdlib.h"
+
 #include "olifex_serial.h"
 
 UART_HandleTypeDef huart4;
 DMA_HandleTypeDef  hdma_uart4_rx;
+char olifex_rx_buffer[RX_BUFFER_SIZE];
+
 
 /**
   * @brief UART4 Initialization Function
@@ -46,6 +50,24 @@ void olifex_serial_init(void)
 
 void olifex_serial_transmit(char * msg_ptr,uint8_t msg_len)
 {
+}
+
+void olifex_serial_IDLECallback(UART_HandleTypeDef *huart)
+{
+	//Stop this DMA transmission
+    HAL_UART_DMAStop(&huart4);
+
+    //Calculate the length of the received data
+    uint8_t data_length  = RX_BUFFER_SIZE - __HAL_DMA_GET_COUNTER(&olifex_rx_buffer);
+
+
+
+	//Zero Receiving Buffer
+    memset(olifex_rx_buffer,0,RX_BUFFER_SIZE);
+    data_length = 0;
+
+    //Restart to start DMA transmission of 255 bytes of data at a time
+    HAL_UART_Receive_DMA(&huart4, (uint8_t*)olifex_rx_buffer, 128);
 }
 
 
