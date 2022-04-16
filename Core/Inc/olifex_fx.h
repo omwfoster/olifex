@@ -14,7 +14,7 @@
 #include "stdbool.h"
 #include "string.h"
 
-
+#define FX_TABLE_SIZE 4
 
 #define CLAMP(a,b) \
     ({ \
@@ -33,21 +33,23 @@ typedef struct fx_config {
 
 }fx_config;
 
-extern fx_config  fx_cfg1;
+extern fx_config * fx_cfg1;
 
 typedef void (*fx_fp)(ws2812_rgb_struct *rgb_struct);
 
-typedef struct fx_struct{
+typedef struct fx_s{
 	fx_fp fp;
 	char fx_name[8];
 }dispatch_entry;
 
 
-typedef struct dispatch_table{
-	uint8_t n_fx;
-	dispatch_entry fx_struct[];
+typedef struct dt_s{
+	uint8_t fx_count;
+	dispatch_entry fx_struct[FX_TABLE_SIZE];
 }dispatch_table;
 
+
+dispatch_table * ptr_func_table;
 
 
 

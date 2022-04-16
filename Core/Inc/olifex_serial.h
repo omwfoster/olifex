@@ -13,8 +13,14 @@
 
 #define RX_BUFFER_SIZE 128
 
+typedef struct olifex_cmd_fifo{
+	char command_array[2][8];
+	char * command_pending;
+}olifex_cmd_fifo;
+
 void olifex_serial_init(void);
 void olifex_serial_transmit(char * msg_ptr,uint8_t msg_len);
+void olifex_serial_IDLECallback();
 
 
 

@@ -268,6 +268,14 @@ void UART4_IRQHandler(void)
   HAL_UART_IRQHandler(&huart4);
   /* USER CODE BEGIN UART4_IRQn 1 */
 
+  if (__HAL_UART_GET_FLAG (&huart4, UART_FLAG_IDLE))
+
+  {
+	  HAL_UART_RxCpltCallback (&huart4);
+
+  __HAL_UART_CLEAR_IDLEFLAG (&huart4);
+
+ }
   /* USER CODE END UART4_IRQn 1 */
 }
 

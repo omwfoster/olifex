@@ -3,9 +3,10 @@
  */
 #include "olifex_fx.h"
 
-fx_config fx_cfg1;
+fx_config  * fx_cfg1;
+bool fx_init = false;
 
-
+dispatch_table  * fx_array_struct;
 
 
 
@@ -23,12 +24,29 @@ float bound(float value, float max, float min) {
 
 void init_effects(fx_config *p_fx) {
 
+	fx_init = true;
+	fx_cfg1 = p_fx;
 	p_fx->hue_offset = 0;
 	p_fx->sat_offset = 0;
 	p_fx->val_offset = 0;
 	p_fx->pos_offset = 0;
 	p_fx->number_pixels = NUMBER_OF_PIXELS;
 	p_fx->direction = true;
+
+
+
+	dispatch_table dt1 = {4 ,
+							{
+									{rgb_scroll , "rgb_scrl"},
+									{hsv_scroll , "hsv_scrl"},
+									{hsv_wave ,   "hsv_wave"},
+									{fire_fill ,  "fire_fll"}
+							}
+						  };
+
+
+
+	fx_array_struct = &dt1;
 
 }
 
@@ -94,19 +112,19 @@ void rgb_scroll(ws2812_rgb_struct *rgb_struct) {
 
 	uint32_t temp;
 	for (uint8_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
-		fx_cfg1.pos_offset < 0xFF ? fx_cfg1.pos_offset++ : 0;
-		temp = (color_wheel(fx_cfg1.pos_offset, 64));
+		fx_cfg1->pos_offset < 0xFF ? fx_cfg1->pos_offset++ : 0;
+		temp = (color_wheel(fx_cfg1->pos_offset, 64));
 		rgb.xUINT = temp;
 		set_pixel_GRB(rgb_struct, &rgb, i);
 	}
 
-	shift_pos(&fx_cfg1);
+	shift_pos(fx_cfg1);
 
 }
 
 void hsv_scroll(ws2812_rgb_struct *_rgb_struct) {
 
-	struct_HSV _hsv = { fx_cfg1.hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { fx_cfg1->hue_offset, 1000, 50, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 
 	for (uint16_t i = 0; i < NUMBER_OF_PIXELS; ++i) {
@@ -115,13 +133,13 @@ void hsv_scroll(ws2812_rgb_struct *_rgb_struct) {
 		set_pixel_GRB(_rgb_struct, &_rgb, map_to_pixel(i));
 	}
 
-	shift_hue(&fx_cfg1);
+	shift_hue(fx_cfg1);
 
 }
 
 void hsv_wave(ws2812_rgb_struct *_rgb_struct) {
 
-	struct_HSV _hsv = { fx_cfg1.hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { fx_cfg1->hue_offset, 1000, 50, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 	uint8_t i_sin = 0;
 
@@ -133,7 +151,7 @@ void hsv_wave(ws2812_rgb_struct *_rgb_struct) {
 		i_sin < 255 ? i_sin++ : 0;
 	}
 
-	shift_hue(&fx_cfg1);
+	shift_hue(fx_cfg1);
 
 }
 
