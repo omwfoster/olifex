@@ -52,6 +52,7 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 
 
 
+
 /* USER CODE BEGIN PV */
 
 uint16_t output_array[BUFFER_LENGTH] __attribute__ ((aligned (4)));
@@ -62,6 +63,8 @@ ws2812_rgb_struct pixel_in_rgb;
 
 uint8_t t_startup = 1;
 bool frame_tick = false;
+fx_config  fx_cfg1;
+dispatch_table * fx_dt1;
 
 
 
@@ -176,7 +179,7 @@ int main(void)
 
 
 
-    init_effects(&fx_cfg1);
+    init_fx(&fx_cfg1, &fx_dt1);
     fill_pixel_map();
 
 

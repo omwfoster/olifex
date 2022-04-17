@@ -3,7 +3,7 @@
  */
 #include "olifex_fx.h"
 
-fx_config  * fx_cfg1;
+static fx_config  * fx_cfg1;
 bool fx_init = false;
 
 dispatch_table  * fx_array_struct;
@@ -22,7 +22,7 @@ float bound(float value, float max, float min) {
 
 
 
-void init_effects(fx_config *p_fx) {
+void init_fx(fx_config *p_fx, dispatch_table ** p_dt ) {
 
 	fx_init = true;
 	fx_cfg1 = p_fx;
@@ -45,6 +45,7 @@ void init_effects(fx_config *p_fx) {
 						  };
 
 
+	 p_dt = &dt1;
 
 	fx_array_struct = &dt1;
 
