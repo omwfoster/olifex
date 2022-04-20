@@ -12,17 +12,19 @@
 #include "olifex_serial.h"
 
 UART_HandleTypeDef huart4;
-DMA_HandleTypeDef hdma_uart4_rx;
+DMA_HandleTypeDef  hdma_uart4_rx;
 char olifex_rx_buffer[RX_BUFFER_SIZE];
-olifex_cmd_fifo  ocf1;
+olifex_cmd_fifo ocf;
 /**
  * @brief UART4 Initialization Function
  * @param None
  * @retval None
  */
-void olifex_serial_init(void) {
+olifex_cmd_fifo  *  olifex_Serial_init() {
 
 
+
+	ocf.cmd_status = IDLE;
 	huart4.Instance = UART4;
 	huart4.Init.BaudRate = 9600;
 	huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -42,18 +44,27 @@ void olifex_serial_init(void) {
 	}
 
 
-	memset(&ocf1,0,sizeof(olifex_cmd_fifo));
+	memset(&ocf,0,sizeof(olifex_cmd_fifo));
+	return &ocf;
 
 	/* USER CODE END UART4_Init 2 */
 
 }
 
-void olifex_serial_transmit(char *msg_ptr, uint8_t msg_len) {
+void olifex_Tx_send(char *msg_ptr, uint8_t msg_len) {
+}
+
+void olifex_Rx_restart()
+{
+	__HAL_UART_CLEAR_IDLEFLAG(&huart4);
+	//Restart to start DMA transmission of 255 bytes of data at a time
+	HAL_UART_Receive_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
+	//HAL_UARTEx_ReceiveToIdle_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
-	uint16_t i, pos, start;
+
 	uint16_t n_char = __HAL_DMA_GET_COUNTER(huart->hdmarx);
 	static bool command_write;
 
@@ -68,17 +79,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	command_write = !command_write;
 
     /* Copy and Process new data */
-    for(i=0,pos=start; i<8; ++i,++pos)
+    for(uint8_t i=0;i<n_char; ++i)
     {
-    	ocf1.command_array[command_write][i] = olifex_rx_buffer[i];
+    	ocf.cmd_array[command_write][i] = olifex_rx_buffer[i];
     }
 
-	__HAL_UART_CLEAR_IDLEFLAG(&huart4);
-	//Restart to start DMA transmission of 255 bytes of data at a time
-	HAL_UART_Receive_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
-	//HAL_UARTEx_ReceiveToIdle_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
+    ocf.cmd_status = CMD_WAITING;
+
+
+
 
 }
+
+
+
+
+char *  get_cmd()
+{
+	return ocf.cmd_pending;
+}
+
+
 
 
 

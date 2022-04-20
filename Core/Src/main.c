@@ -28,6 +28,8 @@
 #include <olifex_fx.h>
 #include <olifex_pixel.h>
 #include <olifex_serial.h>
+#include <cli.h>
+
 
 /* USER CODE END Includes */
 
@@ -64,7 +66,8 @@ ws2812_rgb_struct pixel_in_rgb;
 uint8_t t_startup = 1;
 bool frame_tick = false;
 fx_config  fx_cfg1;
-dispatch_table * fx_dt1;
+
+cli_t  * cli1;
 
 
 
@@ -173,13 +176,13 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  olifex_serial_init();
+  olifex_Serial_init();
   /* USER CODE BEGIN 2 */
 
 
 
 
-    init_fx(&fx_cfg1, &fx_dt1);
+    init_fx(&fx_cfg1);
     fill_pixel_map();
 
 
@@ -223,8 +226,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 
+	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
+
+
+
 
 	while (1) {
+
+		if(cmd_fifo1->cmd_status == CMD_WAITING)
+		{
+
+		}
 
 
  		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {

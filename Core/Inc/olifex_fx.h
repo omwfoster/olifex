@@ -35,21 +35,7 @@ typedef struct fx_config {
 
 
 
-typedef void (*fx_fp)(ws2812_rgb_struct *rgb_struct);
 
-typedef struct fx_s{
-	fx_fp fp;
-	char fx_name[8];
-}dispatch_entry;
-
-
-typedef struct dt_s{
-	uint8_t fx_count;
-	dispatch_entry fx_struct[FX_TABLE_SIZE];
-}dispatch_table;
-
-
-dispatch_table * ptr_func_table;
 
 
 
@@ -59,7 +45,7 @@ dispatch_table * ptr_func_table;
 
 
 
-void init_fx(fx_config *p_fx, dispatch_table ** p_dt );
+void init_fx(fx_config *p_fx);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);

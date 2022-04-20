@@ -6,7 +6,7 @@
 static fx_config  * fx_cfg1;
 bool fx_init = false;
 
-dispatch_table  * fx_array_struct;
+
 
 
 
@@ -22,7 +22,7 @@ float bound(float value, float max, float min) {
 
 
 
-void init_fx(fx_config *p_fx, dispatch_table ** p_dt ) {
+void init_fx(fx_config *p_fx) {
 
 	fx_init = true;
 	fx_cfg1 = p_fx;
@@ -35,19 +35,7 @@ void init_fx(fx_config *p_fx, dispatch_table ** p_dt ) {
 
 
 
-	dispatch_table dt1 = {4 ,
-							{
-									{rgb_scroll , "rgb_scrl"},
-									{hsv_scroll , "hsv_scrl"},
-									{hsv_wave ,   "hsv_wave"},
-									{fire_fill ,  "fire_fll"}
-							}
-						  };
 
-
-	 p_dt = &dt1;
-
-	fx_array_struct = &dt1;
 
 }
 
