@@ -2,6 +2,8 @@
 #define _CLI_DEFS_H_
 
 #include <stddef.h>
+#include <arm_math.h>
+#include <olifex_fx.h>
 
 #define MAX_BUF_SIZE        128     /* Maximum size of CLI Rx buffer */ 
 #define CMD_TERMINATOR      '\r'    /* Delimiter denoting end of cmd from user */
@@ -21,7 +23,7 @@ typedef enum
 /*!
  * @brief Function type declarations.
  */
-typedef cli_status_t (*cmd_func_ptr_t)();
+typedef cli_status_t (*cmd_func_ptr_t)(ws2812_rgb_struct *);
 typedef void (*println_func_ptr_t)(char *string);
 
 /*!

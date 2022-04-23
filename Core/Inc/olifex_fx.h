@@ -10,6 +10,7 @@
 
 #include <olifex_pixel.h>
 #include "math.h"
+#include <arm_math.h>
 #include "tables.h"
 #include "stdbool.h"
 #include "string.h"
@@ -53,6 +54,7 @@ void rgb_scroll(ws2812_rgb_struct *_rgb_struct);
 void hsv_scroll(ws2812_rgb_struct *_rgb_struct);
 void hsv_wave(ws2812_rgb_struct *_ws_struct);
 void fire_fill(ws2812_rgb_struct *_ws_struct);
+void perlin(ws2812_rgb_struct *_ws_struct);
 void heat_color(UINT32_RGB * _rgb, uint8_t temperature);
 void shift_offset();
 

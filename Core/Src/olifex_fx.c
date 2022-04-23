@@ -2,6 +2,7 @@
 
  */
 #include "olifex_fx.h"
+#include "fastnoise.h"
 
 static fx_config  * fx_cfg1;
 bool fx_init = false;
@@ -298,3 +299,32 @@ void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s)
 
     }
 }
+
+void perlin(ws2812_rgb_struct *_ws_struct)
+{
+	// Create and configure noise state
+	fnl_state noise = fnlCreateState();
+	noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+
+	// Gather noise data
+	float* noiseData = malloc(4 * 8 * sizeof(float32_t));
+	int index = 0;
+
+	for (int y = 0; y < 4; y++)
+	{
+	    for (int x = 0; x < 8; x++)
+	    {
+	        noiseData[index++] = fnlGetNoise2D(&noise, x, y);
+	    }
+	}
+
+
+}
+
+
+
+
+
+
+
+

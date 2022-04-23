@@ -54,7 +54,7 @@ cli_status_t cli_process(cli_t *cli);
  * 
  * @return cli_status_t
  */
-cli_status_t cli_put(cli_t *cli, char c);
+cli_status_t cli_put(cli_t *cli, char *  c);
 
 
 #ifdef __cplusplus

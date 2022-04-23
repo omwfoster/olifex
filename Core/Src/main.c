@@ -71,9 +71,6 @@ cli_t  * cli1;
 
 
 
-
-
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -184,9 +181,11 @@ int main(void)
 
     init_fx(&fx_cfg1);
     fill_pixel_map();
+    cli_init(&cli1);
 
-
-	memset(output_array, 0, sizeof(output_array));
+	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
+	memset(cmd_fifo1,0,sizeof(olifex_cmd_fifo));
+    memset(output_array, 0, sizeof(output_array));
 	memset(pixel_array, 0, sizeof(pixel_array));
 
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
@@ -226,24 +225,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 
-	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
+
 
 
 
 
 	while (1) {
 
+
 		if(cmd_fifo1->cmd_status == CMD_WAITING)
 		{
+			cli_put(cli1,(char *)cmd_fifo1->cmd_pending);
 
 		}
 
 
  		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {
 
- 		hsv_scroll(&pixel_in_rgb);
- 		hsv_wave(&pixel_in_rgb);
- 		fire_fill(&pixel_in_rgb);
+ 		if(!(cli1==NULL))
+ 		{
+
+ 		}
 		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
 		frame_tick = false;
 		send_frame();

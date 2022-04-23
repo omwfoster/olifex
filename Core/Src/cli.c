@@ -5,15 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-static volatile uint8_t buf[MAX_BUF_SIZE];      /* CLI Rx byte-buffer */
-static volatile uint8_t *buf_ptr;               /* Pointer to Rx byte-buffer */
+static volatile uint8_t rx_buf[MAX_BUF_SIZE];      /* CLI Rx byte-buffer */
+static volatile uint8_t *rx_buf_ptr;               /* Pointer to Rx byte-buffer */
 
 static uint8_t cmd_buf[MAX_BUF_SIZE];  /* CLI command buffer */
 static volatile uint8_t cmd_pending;
 
 const char cli_prompt[] = ">> ";       /* CLI prompt displayed to the user */
 const char cli_unrecog[] = "CMD: Command not recognised\r\n";
-cli_t  * cli_dt1;
+cli_t  * cli_t1;
 
 
 
@@ -31,12 +31,19 @@ static void cli_print(cli_t *cli, const char *msg);
 cli_status_t cli_init(cli_t **cli)
 {
     /* Set buffer ptr to beginning of buf */
-    buf_ptr = buf;
+    rx_buf_ptr = rx_buf;
     cmd_pending = 0;
 
 
-    cli_dt1 = malloc(sizeof(cli_t));
-    cli_dt1->cmd_cnt = 0;
+
+
+    cli_t1 = malloc(sizeof(cli_t));
+    cli_register_callback("hsv_scrl",(cmd_func_ptr_t)hsv_scroll);
+    cli_register_callback("rgb_scrl",(cmd_func_ptr_t)rgb_scroll);
+    cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave);
+    cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill);
+    cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin);
+
 
 
     return CLI_OK;
@@ -47,18 +54,18 @@ cli_status_t cli_init(cli_t **cli)
  */
 cli_status_t cli_deinit(cli_t *cli)
 {
-	free(cli_dt1);
+	free(cli_t1);
     return CLI_OK;
 }
 
 void cli_register_callback(char * name,cmd_func_ptr_t fp)
 {
 
-	if(cli_dt1->cmd_cnt<MAX_FUNCTIONS)
+	if(cli_t1->cmd_cnt<MAX_FUNCTIONS)
 	{
-	cli_dt1->cmd_tbl[cli_dt1->cmd_cnt].func=fp;
-	strncpy(cli_dt1->cmd_tbl[cli_dt1->cmd_cnt].cmd,name,8);
-	cli_dt1->cmd_cnt++;
+	cli_t1->cmd_tbl[cli_t1->cmd_cnt].func=fp;
+	strncpy(cli_t1->cmd_tbl[cli_t1->cmd_cnt].cmd,name,8);
+	cli_t1->cmd_cnt++;
 	}
 
 }
@@ -82,10 +89,10 @@ cli_status_t cli_process(cli_t *cli)
         if(strncmp("", cli->cmd_tbl[i].cmd,8 ))
         {
             /* Found a match, execute the associated function. */
-			cli_status_t return_value = cli->cmd_tbl[i].func();
+
 		    cli_print(cli, cli_prompt); /* Print the CLI prompt to the user.             */
 		    cmd_pending = 0;
-			return return_value;
+//			cli = cli_t1->cmd_tbl[i].func;
         }
     }
 
@@ -102,30 +109,30 @@ cli_status_t cli_process(cli_t *cli)
  * @brief This API should be called from the devices interrupt handler whenever a
  *        character is received over the input stream.
  */
-cli_status_t cli_put(cli_t *cli, char c)
+cli_status_t cli_put(cli_t *cli, char *  c)
 {
-    switch(c)
+    switch(* c)
     {
     case CMD_TERMINATOR:
         
     	if (!cmd_pending) {
-			*buf_ptr = '\0';            /* Terminate the msg and reset the msg ptr.      */
-			strcpy(cmd_buf, buf);       /* Copy string to command buffer for processing. */
+			*rx_buf_ptr = '\0';            /* Terminate the msg and reset the msg ptr.      */
+			strcpy(cmd_buf, rx_buf);       /* Copy string to command buffer for processing. */
 			cmd_pending = 1;
-			buf_ptr = buf;              /* Reset buf_ptr to beginning.                   */
+			rx_buf_ptr = rx_buf;              /* Reset buf_ptr to beginning.                   */
     	}
         break;
 
     case '\b':
         /* Backspace. Delete character. */
-        if(buf_ptr > buf)
-            buf_ptr--;
+        if(rx_buf_ptr > rx_buf)
+            rx_buf_ptr--;
         break;
 
     default:
         /* Normal character received, add to buffer. */
-        if((buf_ptr - buf) < MAX_BUF_SIZE)
-            *buf_ptr++ = c;
+        if((rx_buf_ptr - rx_buf) < MAX_BUF_SIZE)
+            *rx_buf_ptr++ = * c;
         else
             return CLI_E_BUF_FULL;
         break;
@@ -138,10 +145,10 @@ cli_status_t cli_put(cli_t *cli, char c)
 static void cli_print(cli_t *cli, const char *msg)
 {
     /* Temp buffer to store text in ram first */
-    char buf[50];
+    char send[50];
 
-    strcpy(buf, msg);
-    cli->println(buf);
+    strcpy(send, msg);
+    cli->println(send);
 }
 
 

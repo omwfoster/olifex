@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+
+
+
+
 float TWO_PI = 3.14159 * 2;
 uint16_t map_xy[NUMBER_OF_PIXELS];
 
@@ -247,4 +251,6 @@ uint16_t map_to_pixel(uint16_t i)
 	return i<NUMBER_OF_PIXELS?map_xy[i]:0;
 
 }
+
+
 
