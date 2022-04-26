@@ -37,6 +37,7 @@ typedef struct fx_config {
 	uint16_t number_columns;
 	bool	 direction;
 	float32_t * grad_vectors;
+	uint16_t  * map_xy;
 
 }fx_config;
 
@@ -60,6 +61,8 @@ void fire_fill(ws2812_rgb_struct *_ws_struct,fx_config * p_fx);
 void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
 void heat_color(UINT32_RGB * _rgb, uint8_t temperature);
 void shift_offset();
+uint8_t    fill_pixel_map(fx_config * p_fx);
+uint16_t   map_to_pixel(uint16_t i, fx_config * p_fx);
 
 
 

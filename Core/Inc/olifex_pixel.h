@@ -22,7 +22,6 @@
 #define BUFFER_LENGTH 				((NUMBER_OF_PIXELS * WORDS_PER_PIXEL)  + ZERO_PADDING)
 
 
-extern uint16_t map_xy[];
 
 typedef struct {
 	uint16_t *output_buffer;
@@ -81,8 +80,7 @@ void       shift_frame(ws2812_rgb_struct * _ws_struct,uint16_t _magnitude );
 void       set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UINT32_RGB *_Color,uint32_t _loc);
 uint16_t   calc_GCD(uint16_t a,uint16_t b);
 UINT32_RGB hsv2rgb(struct_HSV *_Color_HSV);
-uint8_t    fill_pixel_map();
-uint16_t   map_to_pixel(uint16_t i);
+
 
 
 

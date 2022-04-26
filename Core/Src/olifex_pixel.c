@@ -15,9 +15,12 @@
 
 
 float TWO_PI = 3.14159 * 2;
-uint16_t map_xy[NUMBER_OF_PIXELS];
 
 
+void init_olifex_pixel(uint16_t rows,uint16_t columns)
+{
+
+}
 
 void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 		float amount) {
@@ -211,46 +214,7 @@ uint16_t calc_GCD(uint16_t a, uint16_t b) {
 
 
 
-uint8_t fill_pixel_map()
-{
 
-	uint16_t i , j = 0;
-	if((!(NUMBER_OF_PIXELS%PIXEL_ROWS)==0))
-	{
-		for(i = 0;i<NUMBER_OF_PIXELS;i++)
- 	    map_xy[i]=i;
-		return 0 ;
-	}
-
-
-    // Traverse through all rows
-    for (i = 1; i <= PIXEL_ROWS; i++) {
-
-        // If current row is even, print from
-        // left to right
-        if (i % 2 == 0) {
-            for (uint16_t j = 0; j < PIXEL_COLUMNS; j++)
-            	map_xy[i]=i;
-
-        // If current row is odd, print from
-        // right to left
-        } else {
-            for (uint16_t j = ((PIXEL_COLUMNS * i)-1) ; j >=  ((PIXEL_COLUMNS * (i-1)-1)); j--)
-            	map_xy[i]=j;
-        }
-    }
-
-	return 1;
-}
-
-
-
-uint16_t map_to_pixel(uint16_t i)
-{
-
-	return i<NUMBER_OF_PIXELS?map_xy[i]:0;
-
-}
 
 
 

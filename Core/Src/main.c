@@ -80,6 +80,7 @@ uint8_t t_startup = 1;
 bool frame_tick = false;
 fx_config  fx_cfg1 = {0U,0U,0U,0U,(PIXEL_ROWS*PIXEL_COLUMNS),PIXEL_ROWS,PIXEL_COLUMNS,true,NULL} ;
 
+
 cli_t  * cli1;
 
 
@@ -194,7 +195,7 @@ int main(void)
 
 
     init_fx(&fx_cfg1);
-    fill_pixel_map();
+    fill_pixel_map(&fx_cfg1);
     cli_init(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();

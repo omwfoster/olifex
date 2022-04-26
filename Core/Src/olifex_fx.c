@@ -31,19 +31,56 @@ void init_fx(fx_config *p_fx) {
 
 	fx_init = true;
 	fx_cfg1 = p_fx;
-	p_fx->hue_offset = 0;
-	p_fx->sat_offset = 0;
-	p_fx->val_offset = 0;
-	p_fx->pos_offset = 0;
-//	p_fx->number_pixels = NUMBER_OF_PIXELS;
 	p_fx->direction = true;
 
 	p_fx->grad_vectors = malloc(p_fx->number_pixels);
-	memcpy(p_fx->grad_vectors,RAND_VECS_2D,((PIXEL_ROWS+1)*(PIXEL_COLUMNS+1))*(sizeof(float32_t)));
+	memcpy(p_fx->grad_vectors,RAND_VECS_2D,(((p_fx->number_rows)+1)*((p_fx->number_columns)+1))*(sizeof(float32_t)));
 
 
 
 
+
+}
+
+uint8_t fill_pixel_map(fx_config *p_fx)
+{
+
+	uint16_t i = 0;
+	if((!(p_fx->number_rows)==0))
+	{
+		for(i = 0;i<p_fx->number_pixels;i++)
+ 	    p_fx->map_xy[i]=i;
+		return 0 ;
+	}
+
+
+    // Traverse through all rows
+    for (i = 1; i <= (p_fx->number_rows); i++) {
+
+        // If current row is even, print from
+        // left to right
+        if (i % 2 == 0) {
+            for (uint16_t j = 0; j < (p_fx->number_columns); j++)
+            	p_fx->map_xy[i]=i;
+
+        // If current row is odd, print from
+        // right to left
+        } else {
+            for (uint16_t j = (((p_fx->number_columns) * i)-1) ; j >=  (((p_fx->number_columns) * (i-1)-1)); j--)
+
+            p_fx->map_xy[i]=j;
+        }
+    }
+
+	return 1;
+}
+
+
+
+uint16_t map_to_pixel(uint16_t i,fx_config *p_fx)
+{
+
+	return i<(p_fx->number_pixels)?(p_fx->map_xy)[i]:0;
 
 }
 
@@ -127,7 +164,7 @@ void hsv_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 	for (uint16_t i = 0; i < p_fx->number_pixels; ++i) {
 		_hsv.hue++;
 		_rgb = hsv2rgb(&_hsv);
-		set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(i));
+		set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(i,p_fx));
 	}
 
 	shift_hue(fx_cfg1);
@@ -144,7 +181,7 @@ void hsv_wave(ws2812_rgb_struct * rgb_struct, fx_config * p_fx){
 		_hsv.hue++;
 		_hsv.val = (((uint16_t) sine_wave[i_sin] / 16));
 		_rgb = hsv2rgb(&_hsv);
-		set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(i));
+		set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(i,p_fx));
 		i_sin < 255 ? i_sin++ : 0;
 	}
 
@@ -172,7 +209,7 @@ void rgb_wave(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
             _rgb.xRGB.red = 16 + 100 * (bound(sinf(xx + time + 2*M_PI/3), 0.5, -0.5) + 0.5);
             _rgb.xRGB.green = 16 + 100 * (bound(sinf(xx + time - 2*M_PI/3), 0.5, -0.5) + 0.5);
             _rgb.xRGB.blue = 16 + 100 * (bound(sinf(xx + time         ), 0.5, -0.5) + 0.5);
-            set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(index));
+            set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(index,p_fx));
             index++;
         }
     }
@@ -213,17 +250,10 @@ void plasma_fill(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 }
 
 
-
-
-
-
-
-
 void fire_fill(ws2812_rgb_struct *_ws_struct, fx_config * p_fx) {
 
 }
 
-}
 
 void setColorBrightness(const UINT32_RGB * in, UINT32_RGB * out, float brightness)
 {
@@ -234,7 +264,7 @@ void setColorBrightness(const UINT32_RGB * in, UINT32_RGB * out, float brightnes
 
 void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_fx)
 {
-	static UINT32_RGB new_color;
+
     int num_of_frames = time_s * 1000 / delay_ms;
     for (int j = 0; j < num_of_frames; j++)
     {
