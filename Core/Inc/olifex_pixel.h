@@ -15,9 +15,7 @@
 #define TIM_COMPARE_HIGH	16
 #define TIM_COMPARE_LOW		35
 
-#define NUMBER_OF_PIXELS    	    40
-#define PIXEL_ROWS					5
-#define PIXEL_COLUMNS				8
+
 
 #define WORDS_PER_PIXEL				24
 #define ZERO_PADDING 				300

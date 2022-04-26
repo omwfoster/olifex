@@ -24,12 +24,17 @@
         (_a > _b ? _a : _b); \
     })
 
+
+
+
 typedef struct fx_config {
 	uint16_t hue_offset;
 	uint16_t sat_offset;
 	uint16_t val_offset;
 	uint16_t pos_offset;
 	uint16_t number_pixels;
+	uint16_t number_rows;
+	uint16_t number_columns;
 	bool	 direction;
 	float32_t * grad_vectors;
 
@@ -48,11 +53,11 @@ void init_fx(fx_config *p_fx);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);
-void rgb_scroll(ws2812_rgb_struct *_rgb_struct);
-void hsv_scroll(ws2812_rgb_struct *_rgb_struct);
-void hsv_wave(ws2812_rgb_struct *_ws_struct);
-void fire_fill(ws2812_rgb_struct *_ws_struct);
-void perlin(ws2812_rgb_struct *_ws_struct);
+void rgb_scroll(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
+void hsv_scroll(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
+void hsv_wave(ws2812_rgb_struct  *_ws_struct, fx_config * p_fx);
+void fire_fill(ws2812_rgb_struct *_ws_struct,fx_config * p_fx);
+void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
 void heat_color(UINT32_RGB * _rgb, uint8_t temperature);
 void shift_offset();
 

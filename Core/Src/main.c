@@ -25,6 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "string.h"
+#include <stdbool.h>
 #include <olifex_fx.h>
 #include <olifex_pixel.h>
 #include <olifex_serial.h>
@@ -35,6 +36,10 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
+#define NUMBER_OF_PIXELS    	    40
+#define PIXEL_ROWS					5
+#define PIXEL_COLUMNS				8
 
 /* USER CODE END PTD */
 
@@ -63,9 +68,17 @@ pwm_output_struct pixel_out_pwm;
 UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
 ws2812_rgb_struct pixel_in_rgb;
 
+uint16_t hue_offset;
+uint16_t sat_offset;
+uint16_t val_offset;
+uint16_t pos_offset;
+uint16_t number_pixels;
+bool	 direction;
+float32_t * grad_vectors;
+
 uint8_t t_startup = 1;
 bool frame_tick = false;
-fx_config  fx_cfg1;
+fx_config  fx_cfg1 = {0U,0U,0U,0U,(PIXEL_ROWS*PIXEL_COLUMNS),PIXEL_ROWS,PIXEL_COLUMNS,true,NULL} ;
 
 cli_t  * cli1;
 
