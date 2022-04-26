@@ -3,9 +3,13 @@
  */
 #include "olifex_fx.h"
 #include "fastnoise.h"
+#include "stdlib.h"
 
 static fx_config  * fx_cfg1;
 bool fx_init = false;
+
+
+
 
 
 
@@ -33,6 +37,9 @@ void init_fx(fx_config *p_fx) {
 	p_fx->pos_offset = 0;
 	p_fx->number_pixels = NUMBER_OF_PIXELS;
 	p_fx->direction = true;
+
+	p_fx->grad_vectors = malloc(((PIXEL_ROWS+1)*(PIXEL_COLUMNS+1))*(sizeof(float32_t)));
+	memcpy(p_fx->grad_vectors,RAND_VECS_2D,((PIXEL_ROWS+1)*(PIXEL_COLUMNS+1))*(sizeof(float32_t)));
 
 
 
@@ -300,24 +307,9 @@ void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s)
     }
 }
 
+
 void perlin(ws2812_rgb_struct *_ws_struct)
 {
-	// Create and configure noise state
-	fnl_state noise = fnlCreateState();
-	noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
-
-	// Gather noise data
-	float* noiseData = malloc(4 * 8 * sizeof(float32_t));
-	int index = 0;
-
-	for (int y = 0; y < 4; y++)
-	{
-	    for (int x = 0; x < 8; x++)
-	    {
-	        noiseData[index++] = fnlGetNoise2D(&noise, x, y);
-	    }
-	}
-
 
 }
 

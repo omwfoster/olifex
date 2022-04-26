@@ -31,11 +31,9 @@ typedef struct fx_config {
 	uint16_t pos_offset;
 	uint16_t number_pixels;
 	bool	 direction;
+	float32_t * grad_vectors;
 
 }fx_config;
-
-
-
 
 
 
