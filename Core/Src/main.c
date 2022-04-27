@@ -201,9 +201,6 @@ int main(void)
 
 
 
-
-
-
 	__HAL_DMA_ENABLE_IT(&hdma_tim3_ch3, DMA_IT_TC);
 
 	reset_gpio_pwm(&htim3);
@@ -233,11 +230,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-
-
-
 
 
 	while (1) {
