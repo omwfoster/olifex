@@ -65,16 +65,10 @@ DMA_HandleTypeDef hdma_tim3_ch3;
 uint16_t output_array[BUFFER_LENGTH] __attribute__ ((aligned (4)));
 pwm_output_struct pixel_out_pwm;
 
-UINT32_RGB pixel_array[NUMBER_OF_PIXELS] = { { { 0, 0, 0, 0 } } };
+
 ws2812_rgb_struct pixel_in_rgb;
 
-uint16_t hue_offset;
-uint16_t sat_offset;
-uint16_t val_offset;
-uint16_t pos_offset;
-uint16_t number_pixels;
-bool	 direction;
-float32_t * grad_vectors;
+
 
 uint8_t t_startup = 1;
 bool frame_tick = false;
@@ -195,16 +189,17 @@ int main(void)
 
 
     init_fx(&fx_cfg1);
-    fill_pixel_map(&fx_cfg1);
     cli_init(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
 	memset(cmd_fifo1,0,sizeof(olifex_cmd_fifo));
     memset(output_array, 0, sizeof(output_array));
-	memset(pixel_array, 0, sizeof(pixel_array));
+
 
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
-	init_ws2812_rgb_struct(pixel_array, &pixel_in_rgb);
+	init_ws2812_rgb_struct(fx_cfg1.pixel_array, &pixel_in_rgb);
+
+
 
 
 

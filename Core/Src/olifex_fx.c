@@ -9,11 +9,7 @@ static fx_config  * fx_cfg1;
 bool fx_init = false;
 
 
-
-
-
-
-
+ws2812_rgb_struct pixel_in_rgb;
 
 
 float mapf(float value, float c_min, float c_max, float t_min, float t_max) {
@@ -32,13 +28,10 @@ void init_fx(fx_config *p_fx) {
 	fx_init = true;
 	fx_cfg1 = p_fx;
 	p_fx->direction = true;
-
-	p_fx->grad_vectors = malloc(p_fx->number_pixels);
+	p_fx->grad_vectors = malloc((p_fx->number_pixels)*(sizeof(float32_t)));
 	memcpy(p_fx->grad_vectors,RAND_VECS_2D,(((p_fx->number_rows)+1)*((p_fx->number_columns)+1))*(sizeof(float32_t)));
-
-
-
-
+	p_fx->pixel_array = malloc((p_fx->number_pixels)*(sizeof(UINT32_RGB)));
+	fill_pixel_map(p_fx);
 
 }
 
@@ -52,7 +45,6 @@ uint8_t fill_pixel_map(fx_config *p_fx)
  	    p_fx->map_xy[i]=i;
 		return 0 ;
 	}
-
 
     // Traverse through all rows
     for (i = 1; i <= (p_fx->number_rows); i++) {
@@ -71,17 +63,13 @@ uint8_t fill_pixel_map(fx_config *p_fx)
             p_fx->map_xy[i]=j;
         }
     }
-
 	return 1;
 }
 
 
-
 uint16_t map_to_pixel(uint16_t i,fx_config *p_fx)
 {
-
 	return i<(p_fx->number_pixels)?(p_fx->map_xy)[i]:0;
-
 }
 
 void shift_hue(fx_config *p_fx) {
@@ -116,13 +104,6 @@ void shift_pos(fx_config *p_fx) {
 	}
 }
 
-
-
-/*
- * Put a value 0 to 255 in to get  a color value.
- * The colours are a transition r -> g -> b -> back to r
- * Inspired by the Adafruit examples.
- */
 
 uint32_t color_wheel(uint16_t pos, uint16_t _intensity) {
 	pos = 255 - pos;
@@ -239,12 +220,7 @@ void plasma_fill(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
             float cy = yy + .5 * cosf(time/3.0);
             v += sinf(sqrtf((cx*cx+cy*cy)+1)+time);
             v /= 2.0;
-     //       _rgb.xRGB.red = 255 * (sinf(v * M_PI) + 1) / 2;
-     //       _rgb.xRGB.green = 255 * (cosf(v * M_PI) + 1) / 2;
-     //       _rgb.xRGB.blue = 128 * (sinf(v * M_PI + 2*M_PI/3) + 1) / 2;
-       //     PIXEL(frame, x, y).R = r;
-       //     PIXEL(frame, x, y).G = g;
-       //     PIXEL(frame, x, y).B = b;
+
         }
     }
 }
@@ -270,8 +246,7 @@ void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s , fx_confi
     {
         for (uint16_t i = 0; i < p_fx->number_pixels; i++)
         {
-        //    setColorBrightness(c,&new_color,(sin(i + j) * 127 + 128) / 255.0);
-       //     setPixel_GRB(&new_color, i);
+
         }
 
     }

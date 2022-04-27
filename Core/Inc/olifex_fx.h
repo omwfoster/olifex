@@ -38,6 +38,7 @@ typedef struct fx_config {
 	bool	 direction;
 	float32_t * grad_vectors;
 	uint16_t  * map_xy;
+	UINT32_RGB *  pixel_array;
 
 }fx_config;
 
