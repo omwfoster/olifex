@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-#include "cli_defs.h"
+#include <olifex_cli_defs.h>
 
 /*!
  * @brief This API initialises the command-line interface.
@@ -24,7 +24,7 @@ extern "C" {
  * 
  * @return cli_status_t
  */
-cli_status_t cli_init(cli_t **cli);
+cli_status_t init_olifex_cli(cli_t **cli);
 
 /*!
  * @brief This API deinitialises the command-line interface.

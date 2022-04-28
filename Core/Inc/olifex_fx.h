@@ -51,7 +51,7 @@ typedef struct fx_config {
 
 
 
-void init_fx(fx_config *p_fx);
+void init_olifex_fx(fx_config *p_fx);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);

@@ -4,6 +4,7 @@
 #include "olifex_fx.h"
 #include "fastnoise.h"
 #include "stdlib.h"
+#include "tables.h"
 
 static fx_config  * fx_cfg1;
 bool fx_init = false;
@@ -23,7 +24,7 @@ float bound(float value, float max, float min) {
 
 
 
-void init_fx(fx_config *p_fx) {
+void init_olifex_fx(fx_config *p_fx) {
 
 	fx_init = true;
 	fx_cfg1 = p_fx;

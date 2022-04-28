@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -29,7 +30,7 @@
 #include <olifex_fx.h>
 #include <olifex_pixel.h>
 #include <olifex_serial.h>
-#include <cli.h>
+#include <olifex_cli.h>
 
 
 /* USER CODE END Includes */
@@ -58,27 +59,17 @@ TIM_HandleTypeDef htim4;
 DMA_HandleTypeDef hdma_tim3_ch3;
 
 
-
-
 /* USER CODE BEGIN PV */
 
 uint16_t output_array[BUFFER_LENGTH] __attribute__ ((aligned (4)));
 pwm_output_struct pixel_out_pwm;
-
-
 ws2812_rgb_struct pixel_in_rgb;
-
-
 
 uint8_t t_startup = 1;
 bool frame_tick = false;
 fx_config  fx_cfg1 = {0U,0U,0U,0U,(PIXEL_ROWS*PIXEL_COLUMNS),PIXEL_ROWS,PIXEL_COLUMNS,true,NULL} ;
 
-
 cli_t  * cli1;
-
-
-
 
 /* USER CODE END PV */
 
@@ -110,7 +101,7 @@ void init_pwm_output_struct(uint16_t *_array, pwm_output_struct *_init) {
 
 }
 
-void init_ws2812_rgb_struct(UINT32_RGB *_array, ws2812_rgb_struct *_init) {
+void init_olifex_rgb(UINT32_RGB *_array, ws2812_rgb_struct *_init) {
 	_init->length = NUMBER_OF_PIXELS;
 	_init->ptr_start = _array;
 	_init->ptr_end = &_array[NUMBER_OF_PIXELS - 1];
@@ -188,8 +179,8 @@ int main(void)
 
 
 
-    init_fx(&fx_cfg1);
-    cli_init(&cli1);
+    init_olifex_fx(&fx_cfg1);
+    init_olifex_cli(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
 	memset(cmd_fifo1,0,sizeof(olifex_cmd_fifo));
@@ -197,7 +188,7 @@ int main(void)
 
 
 	init_pwm_output_struct(output_array, &pixel_out_pwm);
-	init_ws2812_rgb_struct(fx_cfg1.pixel_array, &pixel_in_rgb);
+	init_olifex_rgb(fx_cfg1.pixel_array, &pixel_in_rgb);
 
 
 

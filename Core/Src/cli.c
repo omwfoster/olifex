@@ -1,6 +1,5 @@
 
-#include "cli.h"
-
+#include <olifex_cli.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +27,7 @@ static void cli_print(cli_t *cli, const char *msg);
 /*!
  * @brief This API initialises the command-line interface.
  */
-cli_status_t cli_init(cli_t **cli)
+cli_status_t init_olifex_cli(cli_t **cli)
 {
     /* Set buffer ptr to beginning of buf */
     rx_buf_ptr = rx_buf;
