@@ -43,9 +43,10 @@ typedef struct
     println_func_ptr_t println; /* Function pointer to user defined println function.      */
     size_t cmd_cnt;             /* Number of commands in cmd_tbl.  */
     cmd_t  cmd_tbl[8];
+    cmd_t  * cmd_running;
 } cli_t;
 
-void cli_register_callback(char name[8],cmd_func_ptr_t fp);
+
 
 
 #endif

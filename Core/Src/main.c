@@ -67,7 +67,7 @@ ws2812_rgb_struct pixel_in_rgb;
 
 uint8_t t_startup = 1;
 bool frame_tick = false;
-fx_config  fx_cfg1 = {0U,0U,0U,0U,(PIXEL_ROWS*PIXEL_COLUMNS),PIXEL_ROWS,PIXEL_COLUMNS,true,NULL} ;
+fx_config  fx_cfg1;
 
 cli_t  * cli1;
 
@@ -207,6 +207,13 @@ int main(void)
 		Error_Handler();
 	}
 
+	if(!(cli1->cmd_running==NULL))
+			{
+
+		    cli1->cmd_running->func(&pixel_in_rgb);
+
+			}
+
 
 	if (t_startup == 1) {
 		send_frame();
@@ -228,8 +235,7 @@ int main(void)
 
 		if(cmd_fifo1->cmd_status == CMD_WAITING)
 		{
-			cli_put(cli1,(char *)cmd_fifo1->cmd_pending);
-
+			cli_process(cli1,cmd_fifo1->cmd_pending);
 		}
 
 
