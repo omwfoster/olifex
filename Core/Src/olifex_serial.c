@@ -52,6 +52,9 @@ olifex_cmd_fifo  *  olifex_Serial_init() {
 }
 
 void olifex_Tx_send(char *msg_ptr, uint8_t msg_len) {
+
+	HAL_UART_Transmit (&huart4, (uint8_t *)msg_ptr, msg_len, 10);
+
 }
 
 void olifex_Rx_restart()

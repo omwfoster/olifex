@@ -22,6 +22,7 @@ cli_status_t init_olifex_cli(cli_t **cli);
 cli_status_t cli_deinit(cli_t *cli);
 cli_status_t cli_process(cli_t *cli,char func_str[8]);
 void cli_register_callback(char * name,cmd_func_ptr_t fp,cli_t *cli);
+void cli_register_println(println_func_ptr_t fp,cli_t *cli);
 
 #ifdef __cplusplus
 }

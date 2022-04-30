@@ -35,4 +35,5 @@ void olifex_Rx_IDLECallback();
 
 
 
+
 #endif /* INC_OLIFEX_SERIAL_H_ */

@@ -5,18 +5,10 @@
 #include <string.h>
 
 static volatile uint8_t rx_buf[MAX_BUF_SIZE];      /* CLI Rx byte-buffer */
-static volatile uint8_t *rx_buf_ptr;               /* Pointer to Rx byte-buffer */
-
-static uint8_t cmd_buf[MAX_BUF_SIZE];  /* CLI command buffer */
 static volatile uint8_t cmd_pending;
 
 const char cli_prompt[] = ">> ";       /* CLI prompt displayed to the user */
 const char cli_unrecog[] = "CMD: Command not recognised\r\n";
-
-
-
-
-
 
 
 /*!
@@ -36,9 +28,7 @@ cli_status_t init_olifex_cli(cli_t **cli)
     cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,(cli_t *)cli);
     cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,(cli_t *)cli);
 
-
     cli_t * c1 = *cli;
-
     c1->cmd_running = &c1->cmd_tbl[0];
 
     return CLI_OK;
@@ -71,10 +61,9 @@ void cli_register_callback(char * name,cmd_func_ptr_t fp,cli_t *cli)
 
 }
 
-
-void cli_register_println(cli_t *cli)
+void cli_register_println(println_func_ptr_t fp,cli_t *cli)
 {
-
+	cli->println = fp;
 }
 
 
