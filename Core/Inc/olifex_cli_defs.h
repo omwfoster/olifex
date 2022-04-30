@@ -7,7 +7,7 @@
 
 #define MAX_BUF_SIZE        128     /* Maximum size of CLI Rx buffer */ 
 #define CMD_TERMINATOR      '\r'    /* Delimiter denoting end of cmd from user */
-#define MAX_FUNCTIONS        8
+#define MAX_FUNCTIONS        5
 
 typedef enum
 {
@@ -42,7 +42,7 @@ typedef struct
 {    
     println_func_ptr_t println; /* Function pointer to user defined println function.      */
     size_t cmd_cnt;             /* Number of commands in cmd_tbl.  */
-    cmd_t  cmd_tbl[8];
+    cmd_t  cmd_tbl[MAX_FUNCTIONS];
     cmd_t  * cmd_running;
 } cli_t;
 

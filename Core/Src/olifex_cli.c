@@ -12,7 +12,7 @@ static volatile uint8_t cmd_pending;
 
 const char cli_prompt[] = ">> ";       /* CLI prompt displayed to the user */
 const char cli_unrecog[] = "CMD: Command not recognised\r\n";
-cli_t  * cli_t1;
+
 
 
 
@@ -29,15 +29,25 @@ static void cli_print(cli_t *cli, const char *msg);
  */
 cli_status_t init_olifex_cli(cli_t **cli)
 {
-    cli_t1 = malloc(sizeof(cli_t));
+    cli = malloc(sizeof(cli_t));
     cli_register_callback("hsv_scrl",(cmd_func_ptr_t)hsv_scroll,(cli_t *)cli);
     cli_register_callback("rgb_scrl",(cmd_func_ptr_t)rgb_scroll,(cli_t *)cli);
     cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave,(cli_t *)cli);
     cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,(cli_t *)cli);
     cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,(cli_t *)cli);
-   // cli->cmd_running = hsv_scroll;
+
+
+    cli_t * c1 = *cli;
+
+    c1->cmd_running = &c1->cmd_tbl[0];
 
     return CLI_OK;
+}
+
+cli_status_t next_olifex_cli(cli_t *cli)
+{
+
+//	cli->cmd_running = ((*cli->cmd_running.func) == (&cli->cmd_tbl[MAX_FUNCTIONS].func))?(&cli->cmd_tbl[0]):&cli->cmd_tbl[0];
 }
 
 /*!
@@ -45,7 +55,7 @@ cli_status_t init_olifex_cli(cli_t **cli)
  */
 cli_status_t cli_deinit(cli_t *cli)
 {
-	free(cli_t1);
+	free(cli);
     return CLI_OK;
 }
 
@@ -58,6 +68,12 @@ void cli_register_callback(char * name,cmd_func_ptr_t fp,cli_t *cli)
 	strncpy(cli->cmd_tbl[cli->cmd_cnt].cmd,name,8);
 	cli->cmd_cnt++;
 	}
+
+}
+
+
+void cli_register_println(cli_t *cli)
+{
 
 }
 
@@ -90,7 +106,6 @@ static void cli_print(cli_t *cli, const char *msg)
 {
     /* Temp buffer to store text in ram first */
     char send[50];
-
     strcpy(send, msg);
     cli->println(send);
 }
