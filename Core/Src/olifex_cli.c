@@ -22,13 +22,15 @@ static void cli_print(cli_t *cli, const char *msg);
 cli_status_t init_olifex_cli(cli_t **cli)
 {
     cli = malloc(sizeof(cli_t));
-    cli_register_callback("hsv_scrl",(cmd_func_ptr_t)hsv_scroll,(cli_t *)cli);
-    cli_register_callback("rgb_scrl",(cmd_func_ptr_t)rgb_scroll,(cli_t *)cli);
-    cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave,(cli_t *)cli);
-    cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,(cli_t *)cli);
-    cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,(cli_t *)cli);
+
+    cli_register_callback("hsv_scrl",(cmd_func_ptr_t)hsv_scroll,(cli_t *)*cli);
+    cli_register_callback("rgb_scrl",(cmd_func_ptr_t)rgb_scroll,(cli_t *)*cli);
+    cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave,(cli_t *)*cli);
+    cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,(cli_t *)*cli);
+    cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,(cli_t *)*cli);
 
     cli_t * c1 = *cli;
+    (*cli)->cmd_cnt = MAX_FUNCTIONS;
     c1->cmd_running = &c1->cmd_tbl[0];
 
     return CLI_OK;
