@@ -23,7 +23,7 @@ typedef enum
 /*!
  * @brief Function type declarations.
  */
-typedef cli_status_t (*cmd_func_ptr_t)(ws2812_rgb_struct *);
+typedef cli_status_t (*cmd_func_ptr_t)(ws2812_rgb_struct *rgb_struct, fx_config * p_fx);
 typedef void (*println_func_ptr_t)(char *string);
 
 /*!

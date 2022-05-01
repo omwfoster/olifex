@@ -173,16 +173,19 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  olifex_Serial_init();
+
   /* USER CODE BEGIN 2 */
 
 
 
 
+    olifex_Serial_init();
     init_olifex_fx(&fx_cfg1);
     init_olifex_cli(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
+	cli_register_println((println_func_ptr_t)olifex_Tx_send,cli1);
+
 	memset(cmd_fifo1,0,sizeof(olifex_cmd_fifo));
     memset(output_array, 0, sizeof(output_array));
 
@@ -210,7 +213,7 @@ int main(void)
 	if(!(cli1->cmd_running==NULL))
 			{
 
-		    cli1->cmd_running->func(&pixel_in_rgb);
+		    cli1->cmd_running->func(&pixel_in_rgb,&fx_cfg1);
 
 			}
 
@@ -243,7 +246,7 @@ int main(void)
 
  		if(!(cli1==NULL))
  		{
-
+ 			cli1->cmd_running->func(&pixel_in_rgb, &fx_cfg1);
  		}
 		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
 		frame_tick = false;
