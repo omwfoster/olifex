@@ -6,7 +6,7 @@
 #include "stdlib.h"
 #include "tables.h"
 
-static fx_config  * fx_cfg1;
+
 bool fx_init = false;
 
 
@@ -27,9 +27,9 @@ float bound(float value, float max, float min) {
 void init_olifex_fx(fx_config *p_fx) {
 
 	fx_init = true;
-	fx_cfg1 = p_fx;
 	p_fx->direction = true;
 	p_fx->grad_vectors = malloc((p_fx->number_pixels)*(sizeof(float32_t)));
+	p_fx->val_offset = 32;
 	memcpy(p_fx->grad_vectors,RAND_VECS_2D,(((p_fx->number_rows)+1)*((p_fx->number_columns)+1))*(sizeof(float32_t)));
 	p_fx->pixel_array = malloc((p_fx->number_pixels)*(sizeof(UINT32_RGB)));
 	fill_pixel_map(p_fx);
@@ -128,19 +128,19 @@ void rgb_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
 	uint32_t temp;
 	for (uint8_t i = 0; i < p_fx->number_pixels; ++i) {
-		fx_cfg1->pos_offset < 0xFF ? fx_cfg1->pos_offset++ : 0;
-		temp = (color_wheel(fx_cfg1->pos_offset, 64));
+		p_fx->pos_offset < 0xFF ? p_fx->pos_offset++ : 0;
+		temp = (color_wheel(p_fx->pos_offset, p_fx->val_offset));
 		rgb.xUINT = temp;
 		set_pixel_GRB(rgb_struct, &rgb, i);
 	}
 
-	shift_pos(fx_cfg1);
+	shift_pos(p_fx);
 
 }
 
 void hsv_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
-	struct_HSV _hsv = { fx_cfg1->hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 
 	for (uint16_t i = 0; i < p_fx->number_pixels; ++i) {
@@ -149,13 +149,13 @@ void hsv_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 		set_pixel_GRB(rgb_struct, &_rgb, map_to_pixel(i,p_fx));
 	}
 
-	shift_hue(fx_cfg1);
+	shift_hue(p_fx);
 
 }
 
 void hsv_wave(ws2812_rgb_struct * rgb_struct, fx_config * p_fx){
 
-	struct_HSV _hsv = { fx_cfg1->hue_offset, 1000, 50, 0 };
+	struct_HSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
 	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
 	uint8_t i_sin = 0;
 
@@ -167,7 +167,7 @@ void hsv_wave(ws2812_rgb_struct * rgb_struct, fx_config * p_fx){
 		i_sin < 255 ? i_sin++ : 0;
 	}
 
-	shift_hue(fx_cfg1);
+	shift_hue(p_fx);
 
 }
 

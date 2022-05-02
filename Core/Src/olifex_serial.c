@@ -62,7 +62,7 @@ void olifex_Rx_restart()
 	__HAL_UART_CLEAR_IDLEFLAG(&huart4);
 	//Restart to start DMA transmission of 255 bytes of data at a time
 	HAL_UART_Receive_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
-	//HAL_UARTEx_ReceiveToIdle_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
+//	HAL_UARTEx_ReceiveToIdle_DMA(&huart4, (uint8_t*) olifex_rx_buffer, RX_BUFFER_SIZE);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
@@ -82,12 +82,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	command_write = !command_write;
 
     /* Copy and Process new data */
-    for(uint8_t i=0;i<n_char; ++i)
+    for(uint8_t i=0;i<(RX_BUFFER_SIZE - n_char); ++i)
     {
     	ocf.cmd_array[command_write][i] = olifex_rx_buffer[i];
     }
+    ocf.cmd_pending = &ocf.cmd_array[command_write][0];
 
     ocf.cmd_status = CMD_WAITING;
+
+    olifex_Rx_restart();
 
 
 

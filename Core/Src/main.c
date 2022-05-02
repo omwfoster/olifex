@@ -180,7 +180,7 @@ int main(void)
 
 
 
-    olifex_Serial_init();
+
     init_olifex_fx(&fx_cfg1);
     init_olifex_cli(&cli1);
 
@@ -245,13 +245,14 @@ int main(void)
 
  		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {
 
- 		if(!(cli1==NULL))
+ 		if(!(cli1==NULL)&&(frame_tick==true))
  		{
  			cli1->cmd_running->func(&pixel_in_rgb, &fx_cfg1);
+ 			write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
+ 			frame_tick = false;
+ 			send_frame();
  		}
-		write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
-		frame_tick = false;
-		send_frame();
+
 	}
 
 	}
