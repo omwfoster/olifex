@@ -10,12 +10,12 @@
 
 #include <olifex_pixel.h>
 #include "math.h"
+#include "arm_math.h"
 #include <arm_math.h>
 #include "tables.h"
 #include "stdbool.h"
 #include "string.h"
 
-#define FX_TABLE_SIZE 4
 
 #define CLAMP(a,b) \
     ({ \
@@ -25,7 +25,10 @@
     })
 
 
-
+typedef struct __attribute__((packed, aligned(4)))  fx_vector{
+	q15_t mag;
+	q15_t theta;
+}fx_vec;
 
 typedef struct fx_config {
 	uint16_t hue_offset;
@@ -36,11 +39,14 @@ typedef struct fx_config {
 	uint16_t number_rows;
 	uint16_t number_columns;
 	bool	 direction;
-	float32_t * grad_vectors;
+	fx_vec * grad_vectors;
 	uint16_t  * map_xy;
-	UINT32_RGB *  pixel_array;
+	UCOL *  pixel_array;
 
 }fx_config;
+
+
+
 
 
 
@@ -60,7 +66,7 @@ void hsv_scroll(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
 void hsv_wave(ws2812_rgb_struct  *_ws_struct, fx_config * p_fx);
 void fire_fill(ws2812_rgb_struct *_ws_struct,fx_config * p_fx);
 void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
-void heat_color(UINT32_RGB * _rgb, uint8_t temperature);
+void heat_color(UCOL * _rgb, uint8_t temperature);
 void shift_offset();
 uint8_t    fill_pixel_map(fx_config * p_fx);
 uint16_t   map_to_pixel(uint16_t i, fx_config * p_fx);

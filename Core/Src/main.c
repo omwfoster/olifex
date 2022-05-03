@@ -101,7 +101,7 @@ void init_pwm_output_struct(uint16_t *_array, pwm_output_struct *_init) {
 
 }
 
-void init_olifex_rgb(UINT32_RGB *_array, ws2812_rgb_struct *_init) {
+void init_olifex_rgb(UCOL *_array, ws2812_rgb_struct *_init) {
 	_init->length = NUMBER_OF_PIXELS;
 	_init->ptr_start = _array;
 	_init->ptr_end = &_array[NUMBER_OF_PIXELS - 1];
@@ -376,7 +376,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 28-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 6000;
+  htim4.Init.Period = 500;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)

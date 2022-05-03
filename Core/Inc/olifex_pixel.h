@@ -43,29 +43,32 @@ typedef struct xRGB {
 	uint8_t alpha;
 }XRGB;
 
-
-typedef union uint32_RGB
-{
-	XRGB	  xRGB;
-	uint32_t  xUINT;
-} UINT32_RGB;
-
-
 typedef struct xHSV {
 	uint16_t hue;
 	uint16_t sat;
 	uint16_t val;
 	uint16_t alpha;
-}struct_HSV;
+}XHSV;
+
+
+typedef union uint32_colour
+{
+	XRGB	  xRGB;
+	uint32_t  xUINT;
+	XHSV	  xHSV;
+} UCOL;
+
+
+
 
 
 typedef struct {
 	uint16_t length;
-	UINT32_RGB *ptr_start;
-	UINT32_RGB *ptr_end;
-	UINT32_RGB *cursor;
-	UINT32_RGB *cursor_up;
-	UINT32_RGB *cursor_down;
+	UCOL *ptr_start;
+	UCOL *ptr_end;
+	UCOL *cursor;
+	UCOL *cursor_up;
+	UCOL *cursor_down;
 	enum {
 		UP,DOWN
 	} frame_direction;
@@ -77,9 +80,9 @@ typedef struct {
 
 void       write_frame_to_output(ws2812_rgb_struct *,pwm_output_struct *);
 void       shift_frame(ws2812_rgb_struct * _ws_struct,uint16_t _magnitude );
-void       set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UINT32_RGB *_Color,uint32_t _loc);
+void       set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UCOL *_Color,uint32_t _loc);
 uint16_t   calc_GCD(uint16_t a,uint16_t b);
-UINT32_RGB hsv2rgb(struct_HSV *_Color_HSV);
+UCOL hsv2rgb(XHSV *_Color_HSV);
 
 
 

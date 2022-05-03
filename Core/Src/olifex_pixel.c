@@ -37,7 +37,7 @@ void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
 
 
 
-void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UINT32_RGB *_Color,
+void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UCOL *_Color,
 		uint32_t _pos) {
 
 	_ws_struct->cursor    =   _ws_struct->ptr_start;
@@ -46,10 +46,10 @@ void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UINT32_RGB *_Color,
 
 }
 
-UINT32_RGB hsv2rgb(struct_HSV *_Color_HSV)
+UCOL hsv2rgb(XHSV *_Color_HSV)
 {
 
-	UINT32_RGB _Color_RGB;
+	UCOL _Color_RGB;
 
 	_Color_RGB.xRGB.red = 0 ;
 	_Color_RGB.xRGB.green = 0 ;
@@ -126,7 +126,7 @@ void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 
 	_rgb_struct->cursor = _rgb_struct->ptr_start;
 	_pwm_struct->cursor = _pwm_struct->ptr_start;
-	UINT32_RGB _rgb;
+	UCOL _rgb;
 
 	while (_rgb_struct->cursor <= (_rgb_struct->ptr_end)) {
 
@@ -147,7 +147,7 @@ void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 }
 void shift_frame(ws2812_rgb_struct *_ws_struct, uint16_t _magnitude) {
 
-	UINT32_RGB _xrgb;
+	UCOL _xrgb;
 
 	if (_ws_struct->length <= 1 || !_magnitude)
 		return;

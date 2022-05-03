@@ -10,7 +10,7 @@
 bool fx_init = false;
 
 
-ws2812_rgb_struct pixel_in_rgb;
+
 
 
 float mapf(float value, float c_min, float c_max, float t_min, float t_max) {
@@ -22,19 +22,33 @@ float bound(float value, float max, float min) {
 }
 
 
+void fill_rnd_vectors(fx_config *p_fx)
+{
+	uint16_t rnd_seed = 0 ;
+	for(uint16_t i = 0; i<=((p_fx->number_rows)+1)*((p_fx->number_columns)+1);i++)
+	{
+		p_fx->grad_vectors[i].mag = (q15_t)RAND_VECS_2D[rnd_seed];
+		rnd_seed++;
+		p_fx->grad_vectors[i].theta = (q15_t)RAND_VECS_2D[rnd_seed];
+		rnd_seed++;
+	}
+}
+
 
 
 void init_olifex_fx(fx_config *p_fx) {
 
 	fx_init = true;
 	p_fx->direction = true;
-	p_fx->grad_vectors = malloc((p_fx->number_pixels)*(sizeof(float32_t)));
+	p_fx->grad_vectors = malloc((p_fx->number_pixels)*(sizeof(fx_vec)));
 	p_fx->val_offset = 32;
-	memcpy(p_fx->grad_vectors,RAND_VECS_2D,(((p_fx->number_rows)+1)*((p_fx->number_columns)+1))*(sizeof(float32_t)));
-	p_fx->pixel_array = malloc((p_fx->number_pixels)*(sizeof(UINT32_RGB)));
+	fill_rnd_vectors(p_fx);
+	p_fx->pixel_array = malloc((p_fx->number_pixels)*(sizeof(UCOL)));
 	fill_pixel_map(p_fx);
 
 }
+
+
 
 uint8_t fill_pixel_map(fx_config *p_fx)
 {
@@ -124,7 +138,7 @@ uint32_t color_wheel(uint16_t pos, uint16_t _intensity) {
 
 void rgb_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
-	UINT32_RGB rgb = { { 0, 0, 0, 0 } };
+	UCOL rgb = { { 0, 0, 0, 0 } };
 
 	uint32_t temp;
 	for (uint8_t i = 0; i < p_fx->number_pixels; ++i) {
@@ -140,8 +154,8 @@ void rgb_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
 void hsv_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
-	struct_HSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
-	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
+	XHSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
+	UCOL _rgb = { { 0, 0, 0, 0 } };
 
 	for (uint16_t i = 0; i < p_fx->number_pixels; ++i) {
 		_hsv.hue++;
@@ -155,8 +169,8 @@ void hsv_scroll(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
 
 void hsv_wave(ws2812_rgb_struct * rgb_struct, fx_config * p_fx){
 
-	struct_HSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
-	UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
+	XHSV _hsv = { p_fx->hue_offset, 1000, p_fx->val_offset, 0 };
+	UCOL _rgb = { { 0, 0, 0, 0 } };
 	uint8_t i_sin = 0;
 
 	for (uint16_t i = 0; i < p_fx->number_pixels; ++i) {
@@ -177,7 +191,7 @@ void hsv_wave(ws2812_rgb_struct * rgb_struct, fx_config * p_fx){
 void rgb_wave(ws2812_rgb_struct *rgb_struct, fx_config * p_fx) {
     static float time;
     float xx;
-    UINT32_RGB _rgb = { { 0, 0, 0, 0 } };
+    UCOL _rgb = { { 0, 0, 0, 0 } };
 
 
     if(time > 2*M_PI) {
@@ -232,14 +246,14 @@ void fire_fill(ws2812_rgb_struct *_ws_struct, fx_config * p_fx) {
 }
 
 
-void setColorBrightness(const UINT32_RGB * in, UINT32_RGB * out, float brightness)
+void setColorBrightness(const UCOL * in, UCOL * out, float brightness)
 {
     out->xRGB.red   = brightness * in->xRGB.red;
     out->xRGB.green = brightness * in->xRGB.green;
     out->xRGB.blue  = brightness * in->xRGB.blue;
 }
 
-void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_fx)
+void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_fx)
 {
 
     int num_of_frames = time_s * 1000 / delay_ms;
@@ -254,9 +268,25 @@ void RunningLights(UINT32_RGB * c, uint32_t delay_ms, uint32_t time_s , fx_confi
 }
 
 
+float32_t dotGridGradient(int ix, int iy, float x, float y) {
+
+
+    // Compute the distance vector
+    float32_t dx = x - (float32_t)ix;
+    float32_t dy = y - (float32_t)iy;
+
+    // Compute the dot-product
+ //   return (dx*gradient.x + dy*gradient.y);
+}
+
+
 void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx)
 {
 
+	for(uint16_t i = 0;i <= (_ws_struct->length);++i)
+	{
+	//	p_fx->pixel_array[i].xHSV;
+	}
 }
 
 
