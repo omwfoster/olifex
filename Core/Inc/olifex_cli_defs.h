@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <arm_math.h>
 #include <olifex_fx.h>
+#include <olifex_perlin.h>
 
 #define MAX_BUF_SIZE        128     /* Maximum size of CLI Rx buffer */ 
 #define CMD_TERMINATOR      '\r'    /* Delimiter denoting end of cmd from user */

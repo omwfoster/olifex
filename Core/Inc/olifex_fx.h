@@ -26,24 +26,34 @@
 
 
 typedef struct __attribute__((packed, aligned(4)))  fx_vector{
-	q15_t mag;
-	q15_t theta;
+	q15_t x;
+	q15_t y;
 }fx_vec;
 
+typedef struct __attribute__((packed, aligned(4)))  fx_grad_cells{
+	uint16_t cell_n;
+	uint16_t cell_x;   // cell size x
+	uint16_t cell_y;   // cell size y
+	fx_vec   * grad_vectors;
+
+}fx_cells;
+
 typedef struct fx_config {
-	uint16_t hue_offset;
-	uint16_t sat_offset;
-	uint16_t val_offset;
-	uint16_t pos_offset;
-	uint16_t number_pixels;
-	uint16_t number_rows;
-	uint16_t number_columns;
-	bool	 direction;
-	fx_vec * grad_vectors;
+
+	uint16_t 	hue_offset;
+	uint16_t 	sat_offset;
+	uint16_t 	val_offset;
+	uint16_t 	pos_offset;
+	uint16_t 	n_pixels;
+	uint16_t 	row_len; //pixels per row
+	uint16_t 	col_len; //pixels per column
+	bool	    direction;
+	fx_cells    grad_cells;
 	uint16_t  * map_xy;
-	UCOL *  pixel_array;
+	UCOL      * pixel_array;
 
 }fx_config;
+
 
 
 
