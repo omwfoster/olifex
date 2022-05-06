@@ -25,16 +25,23 @@
     })
 
 
-typedef struct __attribute__((packed, aligned(4)))  fx_vector{
+typedef struct __attribute__((packed, aligned(4)))  fx_vector_theta{
+	q15_t mag;
+	q15_t theta;
+}fx_vec_theta;
+
+typedef struct __attribute__((packed, aligned(4)))  fx_vector_coord{
 	q15_t x;
 	q15_t y;
-}fx_vec;
+}fx_vec_coord;
+
 
 typedef struct __attribute__((packed, aligned(4)))  fx_grad_cells{
-	uint16_t cell_n;
-	uint16_t cell_x;   // cell size x
-	uint16_t cell_y;   // cell size y
-	fx_vec   * grad_vectors;
+	uint16_t cells_x;
+	uint16_t cells_y;
+	uint16_t cell_size_x;   // cell size x
+	uint16_t cell_size_y;   // cell size y
+	fx_vec_theta   * grad_vectors;
 
 }fx_cells;
 
