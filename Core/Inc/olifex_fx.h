@@ -41,6 +41,9 @@ typedef struct __attribute__((packed, aligned(4)))  fx_grad_cells{
 	uint16_t cells_y;
 	uint16_t cell_size_x;   // cell size x
 	uint16_t cell_size_y;   // cell size y
+	uint16_t row_offset;
+	uint16_t col_offset;
+
 	fx_vec_theta   * grad_vectors;
 
 }fx_cells;
