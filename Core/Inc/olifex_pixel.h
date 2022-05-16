@@ -69,12 +69,16 @@ typedef struct {
 	UCOL *cursor;
 	UCOL *cursor_up;
 	UCOL *cursor_down;
+	uint16_t n_row;
+	uint16_t n_col;
 	enum {
 		UP,DOWN
 	} frame_direction;
 
 
-} ws2812_rgb_struct;
+}ws2812_rgb_struct;
+
+
 
 
 

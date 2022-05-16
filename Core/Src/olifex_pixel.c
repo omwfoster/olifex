@@ -145,20 +145,20 @@ void write_frame_to_output(ws2812_rgb_struct *_rgb_struct,
 	_pwm_struct->cursor = _pwm_struct->ptr_start;
 
 }
-void shift_frame(ws2812_rgb_struct *_ws_struct, uint16_t _magnitude) {
+void shift_frame(ws2812_rgb_struct *_ws_struct, uint16_t stride) {
 
 	UCOL _xrgb;
 
-	if (_ws_struct->length <= 1 || !_magnitude)
+	if (_ws_struct->length <= 1 || !stride)
 		return;
-	_magnitude = _magnitude % _ws_struct->length;
+	stride = stride % _ws_struct->length;
 
-	uint16_t i, j, k, _gcd = calc_GCD(_ws_struct->length, _magnitude);
+	uint16_t i, j, k, _gcd = calc_GCD(_ws_struct->length, stride);
 
 	for (i = 0; i < _gcd; i++) {
 		_xrgb = _ws_struct->ptr_start[i];
 		for (j = i; 1; j = k) {
-			k = j + _magnitude;
+			k = j + stride;
 			if (k >= _ws_struct->length)
 				k -= _ws_struct->length;
 			if (k == i)
@@ -208,6 +208,13 @@ uint16_t calc_GCD(uint16_t a, uint16_t b) {
 	} while (b != 0);
 
 	return a << shift;
+}
+
+uint16_t  get_start(uint16_t cell_x,uint16_t cell_y,uint16_t stride,uint16_t depth)
+{
+
+	return ((cell_x * stride)+(cell_y * depth));
+
 }
 
 

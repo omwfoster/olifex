@@ -33,10 +33,7 @@ void init_olifex_fx(fx_config *p_fx) {
 	p_fx->direction     = true;
 	p_fx->pixel_array   = malloc((p_fx->n_pixels)*(sizeof(UCOL)));
 	p_fx->val_offset    = 32;
-
-
-
-
+	p_fx->grad_cells.grad_vectors = malloc(((p_fx->row_len)+1)*((p_fx->col_len)+1)*sizeof(fx_polar_coord));
 	fill_pixel_map(p_fx);
 
 }
@@ -259,6 +256,8 @@ void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_
 
     }
 }
+
+
 
 
 

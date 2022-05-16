@@ -10,7 +10,7 @@
 #include "olifex_perlin.h"
 #include "stdlib.h"
 
-void fill_rnd_vectors(fx_vec_theta *p_vec,uint16_t num_vec)
+void fill_rnd_vectors(fx_polar_coord *p_vec,uint16_t num_vec)
 {
 
 	for(uint16_t i = 0; i<=(num_vec);i++)
@@ -25,102 +25,158 @@ void fill_rnd_vectors(fx_vec_theta *p_vec,uint16_t num_vec)
 
 
 
-fx_vec_coord theta_to_coord(fx_vec_theta *  fx_t)
+void theta_to_coord(fx_polar_coord * v1,fx_vec_coord * v2)
 {
-
-	//fx_c->x = acos(fx_t->theta);
-	//fx_c->y = asin(fx_t->theta);
-//	return(fx_vec_coord){acos(fx_t->theta),asin(fx_t->theta}
+		v2->x = acos(v1->theta*TWOPI)*v1->mag;
+		v2->y = asin(v1->theta*TWOPI)*v1->mag;
 }
 
 
-q15_t dot_product_2d(fx_vec_theta * v1,fx_vec_coord * v2)
+void corner_vectors(fx_polar_coord * p1,fx_vec_coord * v_t ,cell * c1)
 {
 
-	fx_vec_coord v_temp = {0,0};
-//	theta_to_coord(v1,&v_temp);
-//	return (((v_temp.x)*(v2->x))+((v_temp.y)*(v2->y)));
 
-}
+		theta_to_coord(&p1[c1->a],&v_t[0]);
+		theta_to_coord(&p1[c1->b],&v_t[1]);
+		theta_to_coord(&p1[c1->c],&v_t[2]);
+		theta_to_coord(&p1[c1->d],&v_t[3]);
 
-
-
-
-
-
-
-
-q15_t lerp(fx_vec_coord * v1,fx_vec_coord * v2,uint16_t cell_size)
-{
 
 
 
 }
-void init_perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx)
+
+
+void lerp(cell * p_cell, fx_polar_coord * p_gv)
 {
 
-	float32_t x = ceil((float32_t)p_fx->row_len/(float32_t)p_fx->grad_cells.cell_size_x);
-
-	x*= p_fx->grad_cells.cell_size_x;
-	p_fx->grad_cells.cells_x = (uint16_t)x;
-
-	float32_t y = ceil((float32_t)p_fx->n_pixels)*((float32_t)p_fx->col_len*(float32_t)(p_fx->grad_cells.cell_size_y));
-
-	y*= p_fx->grad_cells.cell_size_y;
-	p_fx->grad_cells.cells_y = (uint16_t)y;
-
-	uint32_t n_elements = (((p_fx->grad_cells.cells_x)*(p_fx->grad_cells.cell_size_x))
-			*((p_fx->grad_cells.cells_y)*(p_fx->grad_cells.cell_size_y)));
 
 
-
-	p_fx->grad_cells.grad_vectors  = malloc(n_elements*(sizeof(fx_vec_theta)));
-
-	p_fx->grad_cells.col_offset = p_fx->grad_cells.cell_size_y;
-
-	p_fx->grad_cells.row_offset = (((p_fx->grad_cells.cells_x)*(p_fx->grad_cells.cell_size_x))
-			*(p_fx->grad_cells.cell_size_y));
-
-
-
-	fill_rnd_vectors(p_fx->grad_cells.grad_vectors,n_elements);
-
-	for(uint16_t i = 0;i <= (_ws_struct->length);++i)
-	{
-
-
-	}
 }
 
-void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx)
+
+void dot_product(fx_vec_coord cell_vector  ,fx_vec_coord * v_c)
 {
 
 
-	fx_cells * fx = &p_fx->grad_cells;
-	fx_vec_theta * cursor;
-	fx_vec_theta * cell[4];
+
+}
 
 
-	for(uint16_t i = 0 ; i < fx->cells_x;i++){
 
-			for(uint16_t j = 0 ; j < fx->cells_y;j++){
-				// iterate rows
-				cursor  = &fx->grad_vectors[((fx->row_offset)*(j))];
-				cell[0] = cursor;
-				cell[1] = cursor + fx->col_offset;
-				cell[2] = cursor + fx->row_offset;
-				cell[0] = cursor + fx->row_offset +fx->col_offset;
+
+
+
+
+
+
+void init_cell(uint16_t x_n, uint16_t y_n,fx_cells * p_fx)
+{
+
+}
+
+void calc_cell_fx(fx_config * p_fx,cell * p_cell)
+{
+	 p_cell->b = ((p_cell->a) + (p_fx->grad_cells.cell_size_x));
+	 p_cell->c = ((p_cell->a) + (p_fx->grad_cells.cell_size_y - 1));
+	 p_cell->d = ((p_cell->c) + (p_fx->grad_cells.cell_size_x));
+}
+
+void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,fx_vec_coord  * v_t)
+
+{  uint16_t start , i,j,x_len,y_len = 0;
+
+
+    x_len = (p_cell->b - p_cell->a);
+	y_len = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
+     for(i=0;i<y_len;i++)
+     {
+    	for(j=0;j<x_len;j++)
+    	{
+
+   // 		p_ws->ptr_start[p_cell->a] = (UCOL)(dot_product(three_square[cursor],&v_t[0])).xUINT;
+
+    	}
+
+    	p_cell->a = start + p_ws->n_row;
+
+
+     }
+
+
+
+}
+
+
+
+
+void perlin(ws2812_rgb_struct *ws, fx_config * p_fx){
+
+	cell c1 = {0,0,0,0};
+	fx_vec_coord v_t[4] = {{0,0},{0,0},{0,0},{0,0}};
+
+
+
+
+
+		while(c1.c < (p_fx->n_pixels)){
+			// iterate rows
+
+
+
+			while(c1.b < (ws->n_row))
+					{
+
+					calc_cell_fx(p_fx,&c1);
+					// iterate full columns.
+					corner_vectors(&p_fx->grad_cells.grad_vectors[0],&v_t[0],&c1);
+
+					c1.a = c1.b + 1 ;
+
+
+
+
+					//get_corners
+
+
+					}
+
+
+			c1.a = ceil((c1.d)/(p_fx->row_len))*(p_fx->row_len);
+
+
+
+
+
 			}
 
 
 
-	}
 
 
 
+
+
+				// iterate full columns.
+
+				//get_corners
+
+
+
+			//iterate last column
+
+
+
+			//bottom right
 
 
 }
+
+
+
+
+
+
 
 
 
