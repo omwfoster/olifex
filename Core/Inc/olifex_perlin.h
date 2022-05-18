@@ -28,6 +28,13 @@ typedef struct cell{
 	uint16_t d;
 }cell;
 
+typedef struct rnd_v{
+	fx_vec_coord v_a;
+	fx_vec_coord v_b;
+	fx_vec_coord v_c;
+	fx_vec_coord v_d;
+}rnd_v;
+
 
 #endif /* INC_OLIFEX_PERLIN_H_ */
 
