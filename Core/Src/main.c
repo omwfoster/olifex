@@ -102,17 +102,14 @@ void init_pwm_output_struct(uint16_t *_array, pwm_output_struct *_init) {
 
 }
 
-void init_olifex_rgb(UCOL *array, ws2812_rgb_struct * init) {
-	init->length = NUMBER_OF_PIXELS;
-	init->ptr_start = array;
-	init->ptr_end = &array[NUMBER_OF_PIXELS - 1];
-	init->cursor = array;
-	init->cursor_up = array;
-	init->cursor_down = array;
-	init->frame_direction = UP;
-	init->n_row = PIXEL_ROWS;
-	init->n_col = PIXEL_COLUMNS;
-
+void init_olifex_rgb(UCOL *_array, ws2812_rgb_struct *_init) {
+	_init->length = NUMBER_OF_PIXELS;
+	_init->ptr_start = _array;
+	_init->ptr_end = &_array[NUMBER_OF_PIXELS - 1];
+	_init->cursor = _array;
+	_init->cursor_up = _array;
+	_init->cursor_down = _array;
+	_init->frame_direction = UP;
 
 }
 
@@ -185,7 +182,11 @@ int main(void)
 
 
 
+<<<<<<< HEAD
     init_olifex_fx(&fx_cfg1,PIXEL_ROWS,PIXEL_COLUMNS,CELL_SIZE);
+=======
+    init_olifex_fx(&fx_cfg1);
+>>>>>>> parent of 816edf7... cleanup
     init_olifex_cli(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();

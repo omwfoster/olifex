@@ -30,7 +30,7 @@ cli_status_t init_olifex_cli(cli_t **cli)
     cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave,*cli);
     cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,*cli);
     cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,*cli);
-    (*cli)->cmd_running = &c1->cmd_tbl[4];
+    (*cli)->cmd_running = &c1->cmd_tbl[0];
 
 
 

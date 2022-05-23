@@ -70,7 +70,11 @@ typedef struct fx_config {
 
 
 
+<<<<<<< HEAD
 void init_olifex_fx(fx_config *p_fx,uint16_t col_len,uint16_t row_len,uint16_t cell_size);
+=======
+void init_olifex_fx(fx_config *p_fx);
+>>>>>>> parent of 816edf7... cleanup
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);

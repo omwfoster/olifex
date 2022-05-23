@@ -24,16 +24,17 @@ float bound(float value, float max, float min) {
 
 
 
+<<<<<<< HEAD
 void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t cell_size) {
+=======
+void init_olifex_fx(fx_config *p_fx) {
+>>>>>>> parent of 816edf7... cleanup
 
-	p_fx->row_len = row_len;
-	p_fx->col_len = col_len;
-	p_fx->n_pixels = col_len * row_len;
-	uint16_t n_gradients = ((p_fx->row_len)+1)*((p_fx->col_len)+1);
 	fx_init = true;
 	p_fx->direction     = true;
 	p_fx->pixel_array   = malloc((p_fx->n_pixels)*(sizeof(UCOL)));
 	p_fx->val_offset    = 32;
+<<<<<<< HEAD
 	p_fx->grad_cells.cell_size_x = cell_size;
 	p_fx->grad_cells.cell_size_y = cell_size;
 	float32_t grad_x = ceil(((float32_t)row_len/(float32_t)cell_size));
@@ -42,8 +43,10 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 	p_fx->grad_cells.row_offset = (uint16_t)grad_x * cell_size;
 	p_fx->grad_cells.col_offset = cell_size;
 	p_fx->map_xy = malloc(p_fx->n_pixels * sizeof(uint16_t));
+=======
+	p_fx->grad_cells.grad_vectors = malloc(((p_fx->row_len)+1)*((p_fx->col_len)+1)*sizeof(fx_polar_coord));
+>>>>>>> parent of 816edf7... cleanup
 	fill_pixel_map(p_fx);
-	fill_rnd_vectors(p_fx->grad_cells.grad_vectors,n_gradients);
 
 }
 
