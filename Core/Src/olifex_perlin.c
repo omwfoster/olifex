@@ -66,7 +66,7 @@ return y0;
 void calc_cell_fx(fx_config * p_fx,cell * p_cell,rnd_v * corner_vectors)
 {
 	 p_cell->b = ((p_cell->a) + (p_fx->grad_cells.cell_size_x));
-	 p_cell->c = ((p_cell->a) + (p_fx->grad_cells.cell_size_y - 1));
+	 p_cell->c = ((p_cell->a) + (p_fx->grad_cells.cell_size_y - 1) * (p_fx->grad_cells.row_offset));
 	 p_cell->d = ((p_cell->c) + (p_fx->grad_cells.cell_size_x));
 	 corner_vectors->v_a = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->a]);
 	 corner_vectors->v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
@@ -79,9 +79,9 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 {  uint16_t start , next, i,j,x_len,y_len = 0;
 
 
-    x_len = (p_cell->b - p_cell->a);
+    x_len = ((p_cell->b) - (p_cell->a));
 	y_len = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
-	* p_ws->cursor = p_ws->ptr_start[p_cell->a];
+	p_ws->cursor = &p_ws->ptr_start[p_cell->a];
 	next = p_ws->n_row - y_len;
 	start = p_cell->a;
 	uint16_t  ws_index;
@@ -124,7 +124,7 @@ void perlin(ws2812_rgb_struct *ws, fx_config * p_fx){
 					//get_corners
 					}
 			calc_cell_ws(ws,&c1,&v_t);
-			c1.a = ceil((c1.d)/(p_fx->row_len))*(p_fx->row_len);
+			c1.a += ((p_fx->grad_cells.row_offset) * (p_fx->grad_cells.cell_size_y - 1)) ;
 
 			}
 

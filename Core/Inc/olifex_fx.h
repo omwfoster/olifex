@@ -70,7 +70,7 @@ typedef struct fx_config {
 
 
 
-void init_olifex_fx(fx_config *p_fx,uint16_t col_len,uint16_t row_len);
+void init_olifex_fx(fx_config *p_fx,uint16_t col_len,uint16_t row_len,uint16_t cell_size);
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);

@@ -41,6 +41,7 @@
 #define NUMBER_OF_PIXELS    	    40
 #define PIXEL_ROWS					5
 #define PIXEL_COLUMNS				8
+#define CELL_SIZE					3
 
 /* USER CODE END PTD */
 
@@ -184,7 +185,7 @@ int main(void)
 
 
 
-    init_olifex_fx(&fx_cfg1,PIXEL_ROWS,PIXEL_COLUMNS);
+    init_olifex_fx(&fx_cfg1,PIXEL_ROWS,PIXEL_COLUMNS,CELL_SIZE);
     init_olifex_cli(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();
