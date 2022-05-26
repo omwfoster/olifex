@@ -182,11 +182,9 @@ int main(void)
 
 
 
-<<<<<<< HEAD
+
     init_olifex_fx(&fx_cfg1,PIXEL_ROWS,PIXEL_COLUMNS,CELL_SIZE);
-=======
-    init_olifex_fx(&fx_cfg1);
->>>>>>> parent of 816edf7... cleanup
+
     init_olifex_cli(&cli1);
 
 	olifex_cmd_fifo * cmd_fifo1 = olifex_Serial_init();

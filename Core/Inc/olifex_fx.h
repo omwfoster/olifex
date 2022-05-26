@@ -48,6 +48,8 @@ typedef struct __attribute__((packed, aligned(4)))  fx_grad_cells{
 	uint16_t cell_size_y;   // cell size y
 	uint16_t row_offset;
 	uint16_t col_offset;
+	uint16_t cells_x;
+	uint16_t cells_y;
 	fx_polar_coord   * grad_vectors;
 
 }fx_cells;
@@ -70,11 +72,8 @@ typedef struct fx_config {
 
 
 
-<<<<<<< HEAD
 void init_olifex_fx(fx_config *p_fx,uint16_t col_len,uint16_t row_len,uint16_t cell_size);
-=======
-void init_olifex_fx(fx_config *p_fx);
->>>>>>> parent of 816edf7... cleanup
+
 
 
 uint32_t color_wheel(uint16_t pos,uint16_t _intensity);

@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
+#include <arm_math.h>
 
 
 
@@ -22,17 +23,16 @@ void init_olifex_pixel(uint16_t rows,uint16_t columns)
 
 }
 
-void blend(const uint8_t *colourA, const uint8_t *colourB, uint8_t *colourOut,
-		float amount) {
-	float r, g, b;
+void blend(const UCOL *colourA, const UCOL *colourB, UCOL *colourOut,uint16_t palette_offset) {
+	float32_t v =   (float32_t)palette_offset/(float32_t)MAX_UINT16;
 
-	r = ((float) colourB[0] * amount) + ((float) colourA[0] * (1.0 - amount));
-	g = ((float) colourB[1] * amount) + ((float) colourA[1] * (1.0 - amount));
-	b = ((float) colourB[2] * amount) + ((float) colourA[2] * (1.0 - amount));
+	uint8_t r = ((float32_t) colourB->xRGB.red * v) + ((float32_t) colourB->xRGB.red * (1.0 - v));
+	uint8_t g = ((float32_t) colourB->xRGB.green * v) + ((float32_t) colourB->xRGB.green * (1.0 - v));
+	uint8_t b = ((float32_t) colourB->xRGB.blue * v) + ((float32_t) colourB->xRGB.blue * (1.0 - v));
 
-	colourOut[0] = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
-	colourOut[1] = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
-	colourOut[2] = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
+	colourOut->xRGB.red = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
+	colourOut->xRGB.green = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
+	colourOut->xRGB.blue = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
 }
 
 

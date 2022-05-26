@@ -63,42 +63,47 @@ return y0;
 
 
 
-void calc_cell_fx(fx_config * p_fx,cell * p_cell,rnd_v * corner_vectors)
+void calc_cell_fx(fx_config * p_fx,cell * p_cell,rnd_v * p_vec)
 {
 
 
 
-	 p_cell->b = ((*p_cell).a + (*p_fx).grad_cells.cell_size_x);
-	 p_cell->c = (((*p_cell).a + (*p_fx).grad_cells.cell_size_y - 1) * (*p_fx).grad_cells.row_offset);
-	 p_cell->d = ((*p_cell).c + ((*p_fx).grad_cells.cell_size_x));
-	 corner_vectors->v_a = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->a]);
-	 corner_vectors->v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
-	 corner_vectors->v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->c]);
-	 corner_vectors->v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->d]);
+	 (*p_cell).b = ((*p_cell).a + (*p_fx).grad_cells.cell_size_x);
+	 (*p_cell).c = (((*p_cell).a + (*p_fx).grad_cells.cell_size_y - 1) * (*p_fx).grad_cells.row_offset);
+	 (*p_cell).d = ((*p_cell).c + ((*p_fx).grad_cells.cell_size_x));
+	 p_vec->v_a = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->a]);
+	 p_vec->v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
+	 p_vec->v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->c]);
+	 p_vec->v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->d]);
 }
 
 void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 
-{  uint16_t  next, i,j,x_len,y_len = 0;
+{  uint16_t  next, i,j,n_x,n_y,k = 0;
 
-
-    x_len = ((p_cell->b) - (p_cell->a));
-	y_len = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
+    UCOL RED = {{255,0,0,0}};
+    n_x = ((p_cell->b) - (p_cell->a));
+	n_y = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
 	p_ws->cursor = &p_ws->ptr_start[p_cell->a];
-	next = p_ws->n_row - y_len;
+	next = p_ws->n_row - n_y;
+	uint8_t output_level = 0;
 	//uint16_t start = p_cell->a;
 	uint16_t  ws_index;
 	q15_t s;
 
-	for(i=0;i<y_len;i++)
+	for(i=0;i<n_y;i++)
      {
-		s = p_cell->a / y_len;
+		s = p_cell->a / n_y;
 
-    	for(j=0;j<x_len;j++)
+    	for(j=0;j<n_x;j++)
     	{
-    		lerp(p_cell,corner_vectors,s);
+    		output_level = ((uint8_t)(255) * (lerp(&three_square[k],corner_vectors,s)));
+    	//	blend()
+    	//	UCOL c1 = {{255}};
+    		*p_ws->cursor = c1;
     		p_ws->cursor++;
     		ws_index++;
+    		k++;
 
     	}
     	p_ws->cursor += next;

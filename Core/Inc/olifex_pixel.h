@@ -14,6 +14,7 @@
 #define TIM_PERIOD			52
 #define TIM_COMPARE_HIGH	16
 #define TIM_COMPARE_LOW		35
+#define MAX_UINT16  65535
 
 
 
@@ -87,6 +88,11 @@ void       shift_frame(ws2812_rgb_struct * _ws_struct,uint16_t _magnitude );
 void       set_pixel_GRB(ws2812_rgb_struct *_ws_struct,UCOL *_Color,uint32_t _loc);
 uint16_t   calc_GCD(uint16_t a,uint16_t b);
 UCOL hsv2rgb(XHSV *_Color_HSV);
+
+#define YELLOW 0xFFFF0000
+#define RED	   0xFF000000
+#define GREEN  0xFF00FF00
+#define BLUE   0x000000FF
 
 
 
