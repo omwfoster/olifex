@@ -267,6 +267,20 @@ void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_
 
 
 
+void vector_rotate(fx_polar_coord * fx_pc_array, uint16_t len, q15_t step)
+{
+	fx_polar_coord * pc1 = fx_pc_array;
+	float32_t temp;
+	q15_t * qt;
+
+	for(uint16_t i = 0; i < len ; i++)
+	{
+		qt = &(pc1->theta);
+		temp =  * qt + step;
+		pc1->theta = (q15_t)temp;
+		pc1++;
+	}
+}
 
 
 

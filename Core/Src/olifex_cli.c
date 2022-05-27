@@ -42,7 +42,9 @@ cli_status_t init_olifex_cli(cli_t **cli)
 cli_status_t next_olifex_cli(cli_t *cli)
 {
 
-//	cli->cmd_running = ((*cli->cmd_running.func) == (&cli->cmd_tbl[MAX_FUNCTIONS].func))?(&cli->cmd_tbl[0]):&cli->cmd_tbl[0];
+//	cli->cmd_running = ((cli->cmd_running.func) == (&(cli->cmd_tbl[MAX_FUNCTIONS].func)))?(&cli->cmd_tbl[0]):&cli->cmd_tbl[0];
+
+
 }
 
 /*!

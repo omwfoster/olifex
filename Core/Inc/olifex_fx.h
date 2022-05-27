@@ -50,6 +50,7 @@ typedef struct __attribute__((packed, aligned(4)))  fx_grad_cells{
 	uint16_t col_offset;
 	uint16_t cells_x;
 	uint16_t cells_y;
+	uint16_t n_vectors;
 	fx_polar_coord   * grad_vectors;
 
 }fx_cells;
@@ -86,6 +87,7 @@ void heat_color(UCOL * _rgb, uint8_t temperature);
 void shift_offset();
 uint8_t    fill_pixel_map(fx_config * p_fx);
 uint16_t   map_to_pixel(uint16_t i, fx_config * p_fx);
+void vector_rotate(fx_polar_coord * fx_pc_array, uint16_t len, q15_t step);
 
 
 

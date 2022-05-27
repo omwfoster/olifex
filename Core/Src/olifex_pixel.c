@@ -23,7 +23,7 @@ void init_olifex_pixel(uint16_t rows,uint16_t columns)
 
 }
 
-void blend(const UCOL *colourA, const UCOL *colourB, UCOL *colourOut,uint16_t palette_offset) {
+void blend( UCOL * colourA,UCOL * colourB, UCOL *colourOut,uint16_t palette_offset) {
 	float32_t v =   (float32_t)palette_offset/(float32_t)MAX_UINT16;
 
 	uint8_t r = ((float32_t) colourB->xRGB.red * v) + ((float32_t) colourB->xRGB.red * (1.0 - v));

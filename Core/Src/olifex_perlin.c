@@ -8,6 +8,7 @@
 
 #include "fastnoise.h"
 #include "olifex_perlin.h"
+#include "olifex_pixel.h"
 #include "stdlib.h"
 
 void fill_rnd_vectors(fx_polar_coord *p_vec,uint16_t num_vec)
@@ -81,7 +82,7 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 
 {  uint16_t  next, i,j,n_x,n_y,k = 0;
 
-    UCOL RED = {{255,0,0,0}};
+
     n_x = ((p_cell->b) - (p_cell->a));
 	n_y = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
 	p_ws->cursor = &p_ws->ptr_start[p_cell->a];
@@ -91,6 +92,7 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 	uint16_t  ws_index;
 	q15_t s;
 
+
 	for(i=0;i<n_y;i++)
      {
 		s = p_cell->a / n_y;
@@ -98,9 +100,8 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
     	for(j=0;j<n_x;j++)
     	{
     		output_level = ((uint8_t)(255) * (lerp(&three_square[k],corner_vectors,s)));
-    	//	blend()
-    	//	UCOL c1 = {{255}};
-    		*p_ws->cursor = c1;
+    	    blend(&RED,&YELLOW,(UCOL*)p_ws->cursor,output_level);
+
     		p_ws->cursor++;
     		ws_index++;
     		k++;
@@ -113,7 +114,7 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 }
 
 
-
+static q15_t step = 0.13f;
 
 void perlin(ws2812_rgb_struct *ws, fx_config * p_fx){
 
@@ -136,11 +137,13 @@ void perlin(ws2812_rgb_struct *ws, fx_config * p_fx){
 
 			}
 
-
+	vector_rotate(p_fx->grad_cells.grad_vectors, p_fx->grad_cells.n_vectors , step);
 
 
 
 }
+
+
 
 
 
