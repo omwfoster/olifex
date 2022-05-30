@@ -91,10 +91,10 @@ UCOL hsv2rgb(XHSV *_Color_HSV);
 void blend(UCOL *colourA,UCOL * colourB, UCOL * colourOut,uint16_t palette_offset);
 
 
-static const uint32_t  YELLOW  = 0xFFFF0000;
-static const uint32_t  RED	   = 0xFF000000;
-static const uint32_t  GREEN   = 0xFF00FF00;
-static const uint32_t  BLUE    = 0x000000FF;
+static const uint32_t  RGB_YELLOW  = 0xFFFF0000;
+static const uint32_t  RGB_RED	    = 0xFF000000;
+static const uint32_t  RGB_GREEN   = 0xFF00FF00;
+static const uint32_t  RGB_BLUE    = 0x000000FF;
 
 
 

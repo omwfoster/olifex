@@ -40,8 +40,11 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 	p_fx->grad_cells.row_offset = (uint16_t)grad_x * cell_size;
 	p_fx->grad_cells.col_offset = cell_size;
 	p_fx->map_xy = malloc(p_fx->n_pixels * sizeof(uint16_t));
+	((*p_fx).row_len) = (uint16_t)grad_x;
+	((*p_fx).col_len) = (uint16_t)grad_y;
 	p_fx->grad_cells.grad_vectors = malloc(((p_fx->row_len)+1)*((p_fx->col_len)+1)*sizeof(fx_polar_coord));
-
+	p_fx->grad_cells.n_vectors = (((*p_fx).row_len)+1)*(((*p_fx).col_len)+1);
+	fill_rnd_vectors(p_fx->grad_cells.grad_vectors,(*p_fx).grad_cells.n_vectors);
 	fill_pixel_map(p_fx);
 
 }
@@ -269,16 +272,15 @@ void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_
 
 void vector_rotate(fx_polar_coord * fx_pc_array, uint16_t len, q15_t step)
 {
-	fx_polar_coord * pc1 = fx_pc_array;
-	float32_t temp;
-	q15_t * qt;
+	float32_t fpc = (float32_t)(*fx_pc_array).theta;
+	q15_t step1 =  0x4000;
 
 	for(uint16_t i = 0; i < len ; i++)
 	{
-		qt = &(pc1->theta);
-		temp =  * qt + step;
-		pc1->theta = (q15_t)temp;
-		pc1++;
+		float32_t q_theta = fpc + (float32_t)step;
+		q_theta += step;
+
+		fpc++;
 	}
 }
 

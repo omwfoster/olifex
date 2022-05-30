@@ -25,11 +25,11 @@ cli_status_t init_olifex_cli(cli_t **cli)
     cli_t * c1 = *cli;
     (*cli)->cmd_cnt = MAX_FUNCTIONS;
     (*cli)->cmd_running = &c1->cmd_tbl[0];
+    cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,*cli);
     cli_register_callback("hsv_scrl",(cmd_func_ptr_t)hsv_scroll,*cli);
     cli_register_callback("rgb_scrl",(cmd_func_ptr_t)rgb_scroll,*cli);
     cli_register_callback("hsv_wave",(cmd_func_ptr_t)hsv_wave,*cli);
     cli_register_callback("hsv_fire",(cmd_func_ptr_t)fire_fill,*cli);
-    cli_register_callback("hsv_perl",(cmd_func_ptr_t)perlin,*cli);
     (*cli)->cmd_running = &c1->cmd_tbl[0];
 
 

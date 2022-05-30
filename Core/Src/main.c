@@ -246,7 +246,7 @@ int main(void)
 		}
 
 
- 		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&(frame_tick == true)) {
+ 		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&&(frame_tick == true)) {
 
  		if(!(cli1==NULL)&&(frame_tick==true))
  		{

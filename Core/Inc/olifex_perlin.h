@@ -17,7 +17,8 @@
 
 static const fx_vec_coord three_square[]= {{-1,-1},{1,1},{1,0},{-1,-1},{0,1},{1,-1},{0,-1},{0,0}};
 void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
-void init_perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
+void fill_rnd_vectors(fx_polar_coord *p_vec,uint16_t num_vec);
+
 
 #define TWOPI 6.28
 
