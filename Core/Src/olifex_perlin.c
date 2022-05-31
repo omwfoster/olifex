@@ -35,8 +35,20 @@ void fill_rnd_vectors(fx_polar_coord *p_vec,uint16_t num_vec)
 	}
 }
 
+void vector_rotate(fx_polar_coord * p_vec, uint16_t num_vec, q15_t step)
+{
+	float32_t fpc = (float32_t)(*p_vec).theta;
+	q15_t step1 =  0x4000;
+	float32_t q_theta = fpc + (float32_t)step;
 
-
+	for(uint16_t i = 0; i < num_vec ; i++)
+	{
+		q_theta = fpc;
+		q_theta += step1;
+		(*p_vec).theta = (q15_t)q_theta;
+		fpc++;
+	}
+}
 
 fx_vec_coord polar_to_vector(fx_polar_coord * v1)
 {
@@ -65,6 +77,7 @@ q15_t dot_product(fx_vec_coord  * a, fx_vec_coord *  b)
 q15_t lerp(fx_vec_coord * vector  ,rnd_v * vector_cell, q15_t s)
 {
 
+
 	q15_t a = dot_product(vector,&vector_cell->v_a);
 	q15_t b = dot_product(vector,&vector_cell->v_b);
 	q15_t c = dot_product(vector,&vector_cell->v_c);
@@ -86,10 +99,10 @@ void calc_cell_fx(fx_config * p_fx,cell * p_cell,rnd_v * p_vec)
 	 (*p_cell).b = ((*p_cell).a + (*p_fx).grad_cells.cell_size_x);
 	 (*p_cell).c = (((*p_cell).a + (*p_fx).grad_cells.cell_size_y - 1) * (*p_fx).grad_cells.row_offset);
 	 (*p_cell).d = ((*p_cell).c + ((*p_fx).grad_cells.cell_size_x));
-	 p_vec->v_a = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->a]);
-	 p_vec->v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
-	 p_vec->v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->c]);
-	 p_vec->v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->d]);
+	 (*p_vec).v_a = polar_to_vector(&(*p_fx).grad_cells.grad_vectors[p_cell->a]);
+	 (*p_vec).v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
+	 (*p_vec).v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->c]);
+	 (*p_vec).v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->d]);
 }
 
 void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)

@@ -11,7 +11,6 @@
 #include <olifex_pixel.h>
 #include "math.h"
 #include "arm_math.h"
-#include <arm_math.h>
 #include "tables.h"
 #include "stdbool.h"
 #include "string.h"
@@ -87,9 +86,6 @@ void heat_color(UCOL * _rgb, uint8_t temperature);
 void shift_offset();
 uint8_t    fill_pixel_map(fx_config * p_fx);
 uint16_t   map_to_pixel(uint16_t i, fx_config * p_fx);
-void vector_rotate(fx_polar_coord * fx_pc_array, uint16_t len, q15_t step);
-
-
 
 
 #endif /* INC_EFFECTS_H_ */

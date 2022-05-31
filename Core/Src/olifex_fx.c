@@ -6,6 +6,8 @@
 
 #include "stdlib.h"
 #include "tables.h"
+#define PIXEL_ROWS					5
+#define PIXEL_COLUMNS				8
 
 
 bool fx_init = false;
@@ -29,21 +31,25 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 
 
 	fx_init = true;
-	p_fx->direction     = true;
-	p_fx->pixel_array   = malloc((p_fx->n_pixels)*(sizeof(UCOL)));
-	p_fx->val_offset    = 32;
-	p_fx->grad_cells.cell_size_x = cell_size;
-	p_fx->grad_cells.cell_size_y = cell_size;
-	float32_t grad_x = ceil(((float32_t)row_len/(float32_t)cell_size));
-	float32_t grad_y = ceil(((float32_t)col_len/(float32_t)cell_size));
-	p_fx->grad_cells.grad_vectors = malloc(((uint16_t)grad_x*(uint16_t)grad_y)*sizeof(fx_polar_coord));
-	p_fx->grad_cells.row_offset = (uint16_t)grad_x * cell_size;
-	p_fx->grad_cells.col_offset = cell_size;
-	p_fx->map_xy = malloc(p_fx->n_pixels * sizeof(uint16_t));
-	((*p_fx).row_len) = (uint16_t)grad_x;
-	((*p_fx).col_len) = (uint16_t)grad_y;
-	p_fx->grad_cells.grad_vectors = malloc(((p_fx->row_len)+1)*((p_fx->col_len)+1)*sizeof(fx_polar_coord));
-	p_fx->grad_cells.n_vectors = (((*p_fx).row_len)+1)*(((*p_fx).col_len)+1);
+
+	(*p_fx).grad_cells.cell_size_x = cell_size;
+	(*p_fx).grad_cells.cell_size_y = cell_size;
+	(*p_fx).grad_cells.cells_x = ceil(((float32_t)row_len/(float32_t)cell_size));
+	(*p_fx).grad_cells.cells_x = ceil(((float32_t)col_len/(float32_t)cell_size));
+	(*p_fx).grad_cells.row_offset = (uint16_t)(*p_fx).grad_cells.cells_x * cell_size;
+	(*p_fx).grad_cells.col_offset = cell_size;
+	(*p_fx).grad_cells.n_vectors = ((((*p_fx).grad_cells.cells_x)+1)*(((*p_fx).grad_cells.cells_y)+1));
+	(*p_fx).grad_cells.grad_vectors = malloc(((*p_fx).grad_cells.n_vectors) * sizeof(fx_polar_coord));
+
+
+	(*p_fx).row_len = PIXEL_ROWS;
+	(*p_fx).col_len = PIXEL_COLUMNS;
+	(*p_fx).map_xy = malloc(p_fx->n_pixels * sizeof(uint16_t));
+	(*p_fx).direction     = true;
+	(*p_fx).pixel_array   = malloc((p_fx->n_pixels)*(sizeof(UCOL)));
+	(*p_fx).val_offset    = 32;
+
+
 	fill_rnd_vectors(p_fx->grad_cells.grad_vectors,(*p_fx).grad_cells.n_vectors);
 	fill_pixel_map(p_fx);
 
@@ -270,19 +276,7 @@ void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_
 
 
 
-void vector_rotate(fx_polar_coord * fx_pc_array, uint16_t len, q15_t step)
-{
-	float32_t fpc = (float32_t)(*fx_pc_array).theta;
-	q15_t step1 =  0x4000;
 
-	for(uint16_t i = 0; i < len ; i++)
-	{
-		float32_t q_theta = fpc + (float32_t)step;
-		q_theta += step;
-
-		fpc++;
-	}
-}
 
 
 
