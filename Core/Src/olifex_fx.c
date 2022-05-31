@@ -35,7 +35,7 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 	(*p_fx).grad_cells.cell_size_x = cell_size;
 	(*p_fx).grad_cells.cell_size_y = cell_size;
 	(*p_fx).grad_cells.cells_x = ceil(((float32_t)row_len/(float32_t)cell_size));
-	(*p_fx).grad_cells.cells_x = ceil(((float32_t)col_len/(float32_t)cell_size));
+	(*p_fx).grad_cells.cells_y = ceil(((float32_t)col_len/(float32_t)cell_size));
 	(*p_fx).grad_cells.row_offset = (uint16_t)(*p_fx).grad_cells.cells_x * cell_size;
 	(*p_fx).grad_cells.col_offset = cell_size;
 	(*p_fx).grad_cells.n_vectors = ((((*p_fx).grad_cells.cells_x)+1)*(((*p_fx).grad_cells.cells_y)+1));

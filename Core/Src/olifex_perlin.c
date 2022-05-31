@@ -76,8 +76,6 @@ q15_t dot_product(fx_vec_coord  * a, fx_vec_coord *  b)
 
 q15_t lerp(fx_vec_coord * vector  ,rnd_v * vector_cell, q15_t s)
 {
-
-
 	q15_t a = dot_product(vector,&vector_cell->v_a);
 	q15_t b = dot_product(vector,&vector_cell->v_b);
 	q15_t c = dot_product(vector,&vector_cell->v_c);
@@ -127,7 +125,7 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
     	for(j=0;j<n_x;j++)
     	{
     		output_level = (0xFF * (lerp(&three_square[k],corner_vectors,s)));
-    	    blend((UCOL*)&RGB_RED,(UCOL*)&RGB_GREEN, (*p_ws).cursor,output_level);
+    	    blend((UCOL*)&RGB_RED,(UCOL*)&RGB_GREEN, p_ws->cursor,output_level);
 
     		p_ws->cursor++;
     		ws_index++;
