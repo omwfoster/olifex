@@ -110,6 +110,8 @@ void init_olifex_rgb(UCOL *_array, ws2812_rgb_struct *_init) {
 	_init->cursor_up = _array;
 	_init->cursor_down = _array;
 	_init->frame_direction = UP;
+	_init->n_row = PIXEL_ROWS;
+	_init->n_col = PIXEL_COLUMNS;
 
 }
 

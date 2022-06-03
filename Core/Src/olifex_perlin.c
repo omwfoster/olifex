@@ -109,30 +109,27 @@ void calc_cell_ws(ws2812_rgb_struct *p_ws,cell * p_cell,rnd_v * corner_vectors)
 
 
     n_x = ((p_cell->b) - (p_cell->a));
-	n_y = ((p_cell->c - p_cell->a)/(p_cell->b - p_cell->a));
+	n_y = ((p_cell->c - p_cell->a)/(*p_ws).n_col);
 	p_ws->cursor = &p_ws->ptr_start[p_cell->a];
-	next = p_ws->n_row - n_y;
+	next = (*p_ws).n_col - n_x;
 	uint8_t output_level = 0;
-	//uint16_t start = p_cell->a;
-	uint16_t  ws_index;
 	q15_t s;
+	s = (*p_cell).a / n_y;
+
 
 
 	for(i=0;i<n_y;i++)
      {
-		s = p_cell->a / n_y;
+
+
 
     	for(j=0;j<n_x;j++)
     	{
     		output_level = (0xFF * (lerp(&three_square[k],corner_vectors,s)));
     	    blend((UCOL*)&RGB_RED,(UCOL*)&RGB_GREEN, p_ws->cursor,output_level);
-
     		p_ws->cursor++;
-    		ws_index++;
-    		k++;
-
     	}
-    	p_ws->cursor += next;
+     	p_ws->cursor += next;
 
      }
 
@@ -145,22 +142,29 @@ void perlin(ws2812_rgb_struct *ws, fx_config * p_fx){
 	q15_t step = 1307;
 	cell c1 = {0,0,0,0};
 	rnd_v v_t = {{0,0},{0,0},{0,0},{0,0}};
-	for(uint16_t j = 0;j<p_fx->grad_cells.cells_y;++j)
-	{
-		for(uint16_t i = 0;i<p_fx->grad_cells.cells_x;++i)
-			// iterate rows
-					{
-				    calc_cell_fx(p_fx,&c1,&v_t);
-				    calc_cell_ws(ws,&c1,&v_t);
+	uint16_t row_start = 0;
 
-					c1.a = c1.b + 1 ;
+	//iterate cell rows
 
-					//get_corners
-					}
+	while(row_start < ((*ws).n_row)*(*ws).n_col){
+
+
+		row_start += (*p_fx).grad_cells.cells_y;
+
+
+
+
+	}
+
+
+
+
+
+
 
 			c1.a += ((p_fx->grad_cells.row_offset) * (p_fx->grad_cells.cell_size_y - 1)) ;
 
-			}
+
 
 	vector_rotate(p_fx->grad_cells.grad_vectors, (*p_fx).grad_cells.n_vectors , step);
 

@@ -30,9 +30,9 @@ void blend( UCOL * colourA,UCOL * colourB, UCOL *colourOut,uint16_t palette_offs
 	uint8_t g = ((float32_t) colourB->xRGB.green * v) + ((float32_t) colourB->xRGB.green * (1.0 - v));
 	uint8_t b = ((float32_t) colourB->xRGB.blue * v) + ((float32_t) colourB->xRGB.blue * (1.0 - v));
 
-	colourOut->xRGB.red = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
-	colourOut->xRGB.green = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
-	colourOut->xRGB.blue = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
+	(*colourOut).xRGB.red = (r > 255.0) ? 255.0 : (r < 0.0) ? 0.0 : r;
+	(*colourOut).xRGB.green = (g > 255.0) ? 255.0 : (g < 0.0) ? 0.0 : g;
+	(*colourOut).xRGB.blue = (b > 255.0) ? 255.0 : (b < 0.0) ? 0.0 : b;
 }
 
 

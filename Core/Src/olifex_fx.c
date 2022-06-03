@@ -6,6 +6,7 @@
 
 #include "stdlib.h"
 #include "tables.h"
+
 #define PIXEL_ROWS					5
 #define PIXEL_COLUMNS				8
 
@@ -44,7 +45,7 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 
 	(*p_fx).row_len = PIXEL_ROWS;
 	(*p_fx).col_len = PIXEL_COLUMNS;
-	(*p_fx).map_xy = malloc(p_fx->n_pixels * sizeof(uint16_t));
+	(*p_fx).map_xy  = malloc(p_fx->n_pixels * sizeof(uint16_t));
 	(*p_fx).direction     = true;
 	(*p_fx).pixel_array   = malloc((p_fx->n_pixels)*(sizeof(UCOL)));
 	(*p_fx).val_offset    = 32;
