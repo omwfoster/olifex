@@ -22,12 +22,7 @@ void vector_rotate(fx_polar_coord * p_vec, uint16_t num_vec, q15_t step);
 
 #define TWOPI 6.28
 
-typedef struct cell{
-	uint16_t a;
-	uint16_t b;
-	uint16_t c;
-	uint16_t d;
-}cell;
+
 
 typedef struct rnd_v{
 	fx_vec_coord v_a;

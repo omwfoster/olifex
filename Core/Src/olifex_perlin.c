@@ -106,8 +106,7 @@ uint16_t find_eol(uint16_t index, uint16_t row_len) {
 	return (index > 0 ? (uint16_t) ceil(index / row_len) : row_len);
 }
 
-uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx,
-		cell *p_cell) {
+uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx) {
 
 	uint16_t eol = find_eol(index, (*ws).length);
 	uint16_t row_offset = ((eol - index) + 1);
@@ -149,7 +148,7 @@ uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx,
 void perlin(ws2812_rgb_struct *ws, fx_config *p_fx) {
 
 	q15_t step = 1307;
-	cell c1 = { 0, 0, 0, 0 };
+
 	rnd_v v_t = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
 	uint16_t index_low = 0;
 	uint16_t eol = find_eol(index_low, (*ws).n_row);
@@ -162,7 +161,7 @@ void perlin(ws2812_rgb_struct *ws, fx_config *p_fx) {
 		while (index_low < eol) {
 
 			get_corner_vectors(index_low, p_fx, &v_t);
-			draw_cell_ws(index_low, ws, p_fx, &c1);
+			draw_cell_ws(index_low, ws, p_fx);
 
 		}
 
