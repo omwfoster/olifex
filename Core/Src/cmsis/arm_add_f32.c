@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------
  * Project:      CMSIS DSP Library
- * Title:        arm_abs_f32.c
- * Description:  Floating-point vector absolute value
+ * Title:        arm_add_f32.c
+ * Description:  Floating-point vector addition
  *
  * $Date:        23 April 2021
  * $Revision:    V1.9.0
@@ -27,68 +27,69 @@
  */
 
 #include "dsp/basic_math_functions.h"
-#include <math.h>
 
 /**
   @ingroup groupMath
  */
 
 /**
-  @defgroup BasicAbs Vector Absolute Value
+  @defgroup BasicAdd Vector Addition
 
-  Computes the absolute value of a vector on an element-by-element basis.
+  Element-by-element addition of two vectors.
 
   <pre>
-      pDst[n] = abs(pSrc[n]),   0 <= n < blockSize.
+      pDst[n] = pSrcA[n] + pSrcB[n],   0 <= n < blockSize.
   </pre>
 
-  The functions support in-place computation allowing the source and
-  destination pointers to reference the same memory buffer.
   There are separate functions for floating-point, Q7, Q15, and Q31 data types.
  */
 
 /**
-  @addtogroup BasicAbs
+  @addtogroup BasicAdd
   @{
  */
 
 /**
-  @brief         Floating-point vector absolute value.
-  @param[in]     pSrc       points to the input vector
-  @param[out]    pDst       points to the output vector
+  @brief         Floating-point vector addition.
+  @param[in]     pSrcA      points to first input vector
+  @param[in]     pSrcB      points to second input vector
+  @param[out]    pDst       points to output vector
   @param[in]     blockSize  number of samples in each vector
   @return        none
  */
-
 
 #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
 
 #include "arm_helium_utils.h"
 
-void arm_abs_f32(
-  const float32_t * pSrc,
+void arm_add_f32(
+  const float32_t * pSrcA,
+  const float32_t * pSrcB,
         float32_t * pDst,
         uint32_t blockSize)
 {
     uint32_t blkCnt;                               /* Loop counter */
-    f32x4_t vec1;
-    f32x4_t res;
 
+    f32x4_t vec1;
+    f32x4_t vec2;
+    f32x4_t res;
 
     /* Compute 4 outputs at a time */
     blkCnt = blockSize >> 2U;
 
     while (blkCnt > 0U)
     {
-        /* C = |A| */
+        /* C = A + B */
 
-        /* Calculate absolute values and then store the results in the destination buffer. */
-        vec1 = vld1q(pSrc);
-        res = vabsq(vec1);
+        /* Add and then store the results in the destination buffer. */
+        vec1 = vld1q(pSrcA);
+        vec2 = vld1q(pSrcB);
+        res = vaddq(vec1, vec2);
         vst1q(pDst, res);
 
         /* Increment pointers */
-        pSrc += 4;
+        pSrcA += 4;
+        pSrcB += 4; 
         pDst += 4;
         
         /* Decrement the loop counter */
@@ -98,20 +99,21 @@ void arm_abs_f32(
     /* Tail */
     blkCnt = blockSize & 0x3;
 
-
     if (blkCnt > 0U)
     {
-      /* C = |A| */
+      /* C = A + B */
       mve_pred16_t p0 = vctp32q(blkCnt);
-      vec1 = vld1q(pSrc);
-      vstrwq_p(pDst, vabsq(vec1), p0);
+      vec1 = vld1q(pSrcA);
+      vec2 = vld1q(pSrcB);
+      vstrwq_p(pDst, vaddq(vec1,vec2), p0);
     }
 
 }
 
 #else
-void arm_abs_f32(
-  const float32_t * pSrc,
+void arm_add_f32(
+  const float32_t * pSrcA,
+  const float32_t * pSrcB,
         float32_t * pDst,
         uint32_t blockSize)
 {
@@ -119,6 +121,7 @@ void arm_abs_f32(
 
 #if defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
     f32x4_t vec1;
+    f32x4_t vec2;
     f32x4_t res;
 
     /* Compute 4 outputs at a time */
@@ -126,15 +129,17 @@ void arm_abs_f32(
 
     while (blkCnt > 0U)
     {
-        /* C = |A| */
+        /* C = A + B */
 
-    	/* Calculate absolute values and then store the results in the destination buffer. */
-        vec1 = vld1q_f32(pSrc);
-        res = vabsq_f32(vec1);
+    	/* Add and then store the results in the destination buffer. */
+        vec1 = vld1q_f32(pSrcA);
+        vec2 = vld1q_f32(pSrcB);
+        res = vaddq_f32(vec1, vec2);
         vst1q_f32(pDst, res);
 
         /* Increment pointers */
-        pSrc += 4;
+        pSrcA += 4;
+        pSrcB += 4; 
         pDst += 4;
         
         /* Decrement the loop counter */
@@ -152,16 +157,13 @@ void arm_abs_f32(
 
   while (blkCnt > 0U)
   {
-    /* C = |A| */
+    /* C = A + B */
 
-    /* Calculate absolute and store result in destination buffer. */
-    *pDst++ = fabsf(*pSrc++);
-
-    *pDst++ = fabsf(*pSrc++);
-
-    *pDst++ = fabsf(*pSrc++);
-
-    *pDst++ = fabsf(*pSrc++);
+    /* Add and store result in destination buffer. */
+    *pDst++ = (*pSrcA++) + (*pSrcB++);
+    *pDst++ = (*pSrcA++) + (*pSrcB++);
+    *pDst++ = (*pSrcA++) + (*pSrcB++);
+    *pDst++ = (*pSrcA++) + (*pSrcB++);
 
     /* Decrement loop counter */
     blkCnt--;
@@ -180,10 +182,10 @@ void arm_abs_f32(
 
   while (blkCnt > 0U)
   {
-    /* C = |A| */
+    /* C = A + B */
 
-    /* Calculate absolute and store result in destination buffer. */
-    *pDst++ = fabsf(*pSrc++);
+    /* Add and store result in destination buffer. */
+    *pDst++ = (*pSrcA++) + (*pSrcB++);
 
     /* Decrement loop counter */
     blkCnt--;
@@ -191,6 +193,7 @@ void arm_abs_f32(
 
 }
 #endif /* defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE) */
+
 /**
-  @} end of BasicAbs group
+  @} end of BasicAdd group
  */

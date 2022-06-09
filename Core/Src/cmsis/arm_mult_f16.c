@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------
  * Project:      CMSIS DSP Library
- * Title:        arm_sub_f32.c
- * Description:  Floating-point vector subtraction
+ * Title:        arm_mult_f16.c
+ * Description:  Floating-point vector multiplication
  *
  * $Date:        23 April 2021
  * $Revision:    V1.9.0
@@ -26,57 +26,57 @@
  * limitations under the License.
  */
 
-#include "dsp/basic_math_functions.h"
+#include "dsp/basic_math_functions_f16.h"
 
 /**
   @ingroup groupMath
  */
 
 /**
-  @defgroup BasicSub Vector Subtraction
+  @defgroup BasicMult Vector Multiplication
 
-  Element-by-element subtraction of two vectors.
+  Element-by-element multiplication of two vectors.
 
   <pre>
-      pDst[n] = pSrcA[n] - pSrcB[n],   0 <= n < blockSize.
+      pDst[n] = pSrcA[n] * pSrcB[n],   0 <= n < blockSize.
   </pre>
 
   There are separate functions for floating-point, Q7, Q15, and Q31 data types.
  */
 
 /**
-  @addtogroup BasicSub
+  @addtogroup BasicMult
   @{
  */
 
 /**
-  @brief         Floating-point vector subtraction.
-  @param[in]     pSrcA      points to the first input vector
-  @param[in]     pSrcB      points to the second input vector
-  @param[out]    pDst       points to the output vector
-  @param[in]     blockSize  number of samples in each vector
+  @brief         Floating-point vector multiplication.
+  @param[in]     pSrcA      points to the first input vector.
+  @param[in]     pSrcB      points to the second input vector.
+  @param[out]    pDst       points to the output vector.
+  @param[in]     blockSize  number of samples in each vector.
   @return        none
  */
 
-#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
+
+#if defined(ARM_MATH_MVE_FLOAT16) && !defined(ARM_MATH_AUTOVECTORIZE) 
 
 #include "arm_helium_utils.h"
 
-void arm_sub_f32(
-  const float32_t * pSrcA,
-  const float32_t * pSrcB,
-        float32_t * pDst,
+void arm_mult_f16(
+  const float16_t * pSrcA,
+  const float16_t * pSrcB,
+        float16_t * pDst,
         uint32_t blockSize)
 {
     uint32_t blkCnt;                               /* Loop counter */
 
-    f32x4_t vec1;
-    f32x4_t vec2;
-    f32x4_t res;
+    f16x8_t vec1;
+    f16x8_t vec2;
+    f16x8_t res;
 
     /* Compute 4 outputs at a time */
-    blkCnt = blockSize >> 2U;
-
+    blkCnt = blockSize >> 3U;
     while (blkCnt > 0U)
     {
         /* C = A + B */
@@ -84,72 +84,41 @@ void arm_sub_f32(
       /* Add and then store the results in the destination buffer. */
         vec1 = vld1q(pSrcA);
         vec2 = vld1q(pSrcB);
-        res = vsubq(vec1, vec2);
+        res = vmulq(vec1, vec2);
         vst1q(pDst, res);
 
         /* Increment pointers */
-        pSrcA += 4;
-        pSrcB += 4; 
-        pDst += 4;
+        pSrcA += 8;
+        pSrcB += 8; 
+        pDst += 8;
         
         /* Decrement the loop counter */
         blkCnt--;
     }
 
     /* Tail */
-    blkCnt = blockSize & 0x3;
-
+    blkCnt = blockSize & 0x7;
     if (blkCnt > 0U)
     {
       /* C = A + B */
-      mve_pred16_t p0 = vctp32q(blkCnt);
+      mve_pred16_t p0 = vctp16q(blkCnt);
       vec1 = vld1q(pSrcA);
       vec2 = vld1q(pSrcB);
-      vstrwq_p(pDst, vsubq(vec1,vec2), p0);
+      vstrhq_p(pDst, vmulq(vec1,vec2), p0);
     }
 
 }
 
 #else
-void arm_sub_f32(
-  const float32_t * pSrcA,
-  const float32_t * pSrcB,
-        float32_t * pDst,
+#if defined(ARM_FLOAT16_SUPPORTED)
+void arm_mult_f16(
+  const float16_t * pSrcA,
+  const float16_t * pSrcB,
+        float16_t * pDst,
         uint32_t blockSize)
 {
-        uint32_t blkCnt;                               /* Loop counter */
+    uint32_t blkCnt;                               /* Loop counter */
 
-#if defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
-    f32x4_t vec1;
-    f32x4_t vec2;
-    f32x4_t res;
-
-    /* Compute 4 outputs at a time */
-    blkCnt = blockSize >> 2U;
-
-    while (blkCnt > 0U)
-    {
-        /* C = A - B */
-
-        /* Subtract and then store the results in the destination buffer. */
-        vec1 = vld1q_f32(pSrcA);
-        vec2 = vld1q_f32(pSrcB);
-        res = vsubq_f32(vec1, vec2);
-        vst1q_f32(pDst, res);
-
-        /* Increment pointers */
-        pSrcA += 4;
-        pSrcB += 4; 
-        pDst += 4;
-        
-        /* Decrement the loop counter */
-        blkCnt--;
-    }
-
-    /* Tail */
-    blkCnt = blockSize & 0x3;
-
-#else
 #if defined (ARM_MATH_LOOPUNROLL) && !defined(ARM_MATH_AUTOVECTORIZE)
 
   /* Loop unrolling: Compute 4 outputs at a time */
@@ -157,16 +126,16 @@ void arm_sub_f32(
 
   while (blkCnt > 0U)
   {
-    /* C = A - B */
+    /* C = A * B */
 
-    /* Subtract and store result in destination buffer. */
-    *pDst++ = (*pSrcA++) - (*pSrcB++);
+    /* Multiply inputs and store result in destination buffer. */
+    *pDst++ = (_Float16)(*pSrcA++) * (_Float16)(*pSrcB++);
 
-    *pDst++ = (*pSrcA++) - (*pSrcB++);
+    *pDst++ = (_Float16)(*pSrcA++) * (_Float16)(*pSrcB++);
 
-    *pDst++ = (*pSrcA++) - (*pSrcB++);
+    *pDst++ = (_Float16)(*pSrcA++) * (_Float16)(*pSrcB++);
 
-    *pDst++ = (*pSrcA++) - (*pSrcB++);
+    *pDst++ = (_Float16)(*pSrcA++) * (_Float16)(*pSrcB++);
 
     /* Decrement loop counter */
     blkCnt--;
@@ -181,22 +150,22 @@ void arm_sub_f32(
   blkCnt = blockSize;
 
 #endif /* #if defined (ARM_MATH_LOOPUNROLL) */
-#endif /* #if defined(ARM_MATH_NEON) */
 
   while (blkCnt > 0U)
   {
-    /* C = A - B */
+    /* C = A * B */
 
-    /* Subtract and store result in destination buffer. */
-    *pDst++ = (*pSrcA++) - (*pSrcB++);
+    /* Multiply input and store result in destination buffer. */
+    *pDst++ = (_Float16)(*pSrcA++) * (_Float16)(*pSrcB++);
 
     /* Decrement loop counter */
     blkCnt--;
   }
 
 }
+#endif
 #endif /* defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE) */
 
 /**
-  @} end of BasicSub group
+  @} end of BasicMult group
  */

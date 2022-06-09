@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------
  * Project:      CMSIS DSP Library
- * Title:        arm_abs_f32.c
- * Description:  Floating-point vector absolute value
+ * Title:        arm_scale_f32.c
+ * Description:  Multiplies a floating-point vector by a scalar
  *
  * $Date:        23 April 2021
  * $Revision:    V1.9.0
@@ -27,64 +27,77 @@
  */
 
 #include "dsp/basic_math_functions.h"
-#include <math.h>
 
 /**
   @ingroup groupMath
  */
 
 /**
-  @defgroup BasicAbs Vector Absolute Value
+  @defgroup BasicScale Vector Scale
 
-  Computes the absolute value of a vector on an element-by-element basis.
+  Multiply a vector by a scalar value.  For floating-point data, the algorithm used is:
 
   <pre>
-      pDst[n] = abs(pSrc[n]),   0 <= n < blockSize.
+      pDst[n] = pSrc[n] * scale,   0 <= n < blockSize.
   </pre>
 
-  The functions support in-place computation allowing the source and
-  destination pointers to reference the same memory buffer.
-  There are separate functions for floating-point, Q7, Q15, and Q31 data types.
+  In the fixed-point Q7, Q15, and Q31 functions, <code>scale</code> is represented by
+  a fractional multiplication <code>scaleFract</code> and an arithmetic shift <code>shift</code>.
+  The shift allows the gain of the scaling operation to exceed 1.0.
+  The algorithm used with fixed-point data is:
+
+  <pre>
+      pDst[n] = (pSrc[n] * scaleFract) << shift,   0 <= n < blockSize.
+  </pre>
+
+  The overall scale factor applied to the fixed-point data is
+  <pre>
+      scale = scaleFract * 2^shift.
+  </pre>
+
+  The functions support in-place computation allowing the source and destination
+  pointers to reference the same memory buffer.
  */
 
 /**
-  @addtogroup BasicAbs
+  @addtogroup BasicScale
   @{
  */
 
 /**
-  @brief         Floating-point vector absolute value.
+  @brief         Multiplies a floating-point vector by a scalar.
   @param[in]     pSrc       points to the input vector
+  @param[in]     scale      scale factor to be applied
   @param[out]    pDst       points to the output vector
   @param[in]     blockSize  number of samples in each vector
   @return        none
  */
 
-
 #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
 
 #include "arm_helium_utils.h"
 
-void arm_abs_f32(
+void arm_scale_f32(
   const float32_t * pSrc,
+        float32_t scale,
         float32_t * pDst,
         uint32_t blockSize)
 {
-    uint32_t blkCnt;                               /* Loop counter */
+        uint32_t blkCnt;                               /* Loop counter */
+
     f32x4_t vec1;
     f32x4_t res;
-
 
     /* Compute 4 outputs at a time */
     blkCnt = blockSize >> 2U;
 
     while (blkCnt > 0U)
     {
-        /* C = |A| */
-
-        /* Calculate absolute values and then store the results in the destination buffer. */
+        /* C = A + offset */
+ 
+        /* Add offset and then store the results in the destination buffer. */
         vec1 = vld1q(pSrc);
-        res = vabsq(vec1);
+        res = vmulq(vec1,scale);
         vst1q(pDst, res);
 
         /* Increment pointers */
@@ -98,26 +111,25 @@ void arm_abs_f32(
     /* Tail */
     blkCnt = blockSize & 0x3;
 
-
     if (blkCnt > 0U)
     {
-      /* C = |A| */
-      mve_pred16_t p0 = vctp32q(blkCnt);
-      vec1 = vld1q(pSrc);
-      vstrwq_p(pDst, vabsq(vec1), p0);
+        mve_pred16_t p0 = vctp32q(blkCnt);
+        vec1 = vld1q((float32_t const *) pSrc);
+        vstrwq_p(pDst, vmulq(vec1, scale), p0);
     }
+
 
 }
 
 #else
-void arm_abs_f32(
-  const float32_t * pSrc,
-        float32_t * pDst,
+void arm_scale_f32(
+  const float32_t *pSrc,
+        float32_t scale,
+        float32_t *pDst,
         uint32_t blockSize)
 {
-        uint32_t blkCnt;                               /* Loop counter */
-
-#if defined(ARM_MATH_NEON) && !defined(ARM_MATH_AUTOVECTORIZE)
+  uint32_t blkCnt;                               /* Loop counter */
+#if defined(ARM_MATH_NEON_EXPERIMENTAL)
     f32x4_t vec1;
     f32x4_t res;
 
@@ -126,15 +138,15 @@ void arm_abs_f32(
 
     while (blkCnt > 0U)
     {
-        /* C = |A| */
+        /* C = A * scale */
 
-    	/* Calculate absolute values and then store the results in the destination buffer. */
+    	/* Scale the input and then store the results in the destination buffer. */
         vec1 = vld1q_f32(pSrc);
-        res = vabsq_f32(vec1);
+        res = vmulq_f32(vec1, vdupq_n_f32(scale));
         vst1q_f32(pDst, res);
 
         /* Increment pointers */
-        pSrc += 4;
+        pSrc += 4; 
         pDst += 4;
         
         /* Decrement the loop counter */
@@ -145,23 +157,30 @@ void arm_abs_f32(
     blkCnt = blockSize & 0x3;
 
 #else
-#if defined (ARM_MATH_LOOPUNROLL) && !defined(ARM_MATH_AUTOVECTORIZE)
+#if defined (ARM_MATH_LOOPUNROLL)
 
   /* Loop unrolling: Compute 4 outputs at a time */
   blkCnt = blockSize >> 2U;
 
   while (blkCnt > 0U)
   {
-    /* C = |A| */
+    float32_t in1, in2, in3, in4;
 
-    /* Calculate absolute and store result in destination buffer. */
-    *pDst++ = fabsf(*pSrc++);
+    /* C = A * scale */
 
-    *pDst++ = fabsf(*pSrc++);
+    /* Scale input and store result in destination buffer. */
+    in1 = (*pSrc++) * scale;
 
-    *pDst++ = fabsf(*pSrc++);
+    in2 = (*pSrc++) * scale;
 
-    *pDst++ = fabsf(*pSrc++);
+    in3 = (*pSrc++) * scale;
+
+    in4 = (*pSrc++) * scale;
+
+    *pDst++ = in1;
+    *pDst++ = in2;
+    *pDst++ = in3;
+    *pDst++ = in4;
 
     /* Decrement loop counter */
     blkCnt--;
@@ -176,14 +195,14 @@ void arm_abs_f32(
   blkCnt = blockSize;
 
 #endif /* #if defined (ARM_MATH_LOOPUNROLL) */
-#endif /* #if defined(ARM_MATH_NEON) */
+#endif /* #if defined(ARM_MATH_NEON_EXPERIMENTAL) */
 
   while (blkCnt > 0U)
   {
-    /* C = |A| */
+    /* C = A * scale */
 
-    /* Calculate absolute and store result in destination buffer. */
-    *pDst++ = fabsf(*pSrc++);
+    /* Scale input and store result in destination buffer. */
+    *pDst++ = (*pSrc++) * scale;
 
     /* Decrement loop counter */
     blkCnt--;
@@ -191,6 +210,7 @@ void arm_abs_f32(
 
 }
 #endif /* defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE) */
+
 /**
-  @} end of BasicAbs group
+  @} end of BasicScale group
  */
