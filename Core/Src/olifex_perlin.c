@@ -76,17 +76,17 @@ q15_t lerp(fx_vec_coord *vector, rnd_v *vector_cell, q15_t s) {
 	return y0;
 }
 
-void calc_cell_fx(uint16_t index, fx_config *p_fx, cell *p_cell, rnd_v *p_vec) {
+void get_corner_vectors(uint16_t index, fx_config *p_fx, rnd_v *p_vec) {
 
-	(*p_cell).a = index;
-	(*p_cell).b = ((*p_cell).a + (*p_fx).grad_cells.cell_size_x);
-	(*p_cell).c = (((*p_cell).a + (*p_fx).grad_cells.cell_size_y - 1)
-			* (*p_fx).grad_cells.row_offset);
-	(*p_cell).d = ((*p_cell).c + ((*p_fx).grad_cells.cell_size_x));
-	(*p_vec).v_a = polar_to_vector(&(*p_fx).grad_cells.grad_vectors[p_cell->a]);
-	(*p_vec).v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->b]);
-	(*p_vec).v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->c]);
-	(*p_vec).v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[p_cell->d]);
+	uint16_t a, b, c, d = 0;
+	a = index;
+	b = (index + (*p_fx).grad_cells.cell_size_x);
+	c = (index + (2 * (*p_fx).grad_cells.cells_x));
+	d = (c + (*p_fx).grad_cells.cell_size_x);
+	(*p_vec).v_a = polar_to_vector(&p_fx->grad_cells.grad_vectors[a]);
+	(*p_vec).v_b = polar_to_vector(&p_fx->grad_cells.grad_vectors[b]);
+	(*p_vec).v_c = polar_to_vector(&p_fx->grad_cells.grad_vectors[c]);
+	(*p_vec).v_d = polar_to_vector(&p_fx->grad_cells.grad_vectors[d]);
 }
 
 uint16_t find_last(uint16_t index, uint16_t row_offset, uint16_t cell_size,
@@ -99,54 +99,70 @@ uint16_t find_last(uint16_t index, uint16_t row_offset, uint16_t cell_size,
 		index = next < n_pixels ? next : index;
 
 	}
-
+return index;
 }
 
 uint16_t find_eol(uint16_t index, uint16_t row_len) {
-	return (uint16_t)ceil(index / row_len);
+	return (index > 0 ? (uint16_t) ceil(index / row_len) : row_len);
 }
 
-uint16_t draw_cell(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx,
+uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx,
 		cell *p_cell) {
 
-	uint16_t eol = find_eol(index, (*ws).n_row);
-	uint16_t row_offset = (*ws).n_row - (*p_fx).col_len; /// wrooong
-	UCOL *_Color;
+	uint16_t eol = find_eol(index, (*ws).length);
+	uint16_t row_offset = ((eol - index) + 1);
+	rnd_v v_corners = { { 0 } };
+	UCOL Color;
+	int k = 0;
 
-	for (int i = 0; i < (*p_fx).grad_cells.cell_size_y; i++) {
+	get_corner_vectors(index, p_fx, &v_corners);
 
-		for (int i = 0; i < (*p_fx).grad_cells.cell_size_x; i++){
-			set_pixel_GRB(ws, _Color, index);
+	//find eol
 
+	for (int i = 0; i < (*p_fx).grad_cells.cells_y; i++) {
+
+		for (int j = 0; j < (*p_fx).grad_cells.cells_y; j++)
+
+		{
+			if (index < eol) {
+
+				q15_t intensity = lerp(&three_square[k], &v_corners, 0.15);
+
+				Color.xRGB.red = 0;
+				Color.xRGB.green = 0;
+				Color.xRGB.blue = (uint8_t) ((float32_t) intensity * 255);
+				set_pixel_GRB(ws, &Color, index);
+
+				k++;
+			}
+			j++;
+			index += row_offset;
 		}
-		index += row_offset;
+
+		i++;
+
+
 	}
 
 }
-
-
 
 void perlin(ws2812_rgb_struct *ws, fx_config *p_fx) {
 
 	q15_t step = 1307;
 	cell c1 = { 0, 0, 0, 0 };
 	rnd_v v_t = { { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } };
-	uint16_t index_low = 0, index_top = 0;
-	UCOL *cursor;
-
-
+	uint16_t index_low = 0;
 	uint16_t eol = find_eol(index_low, (*ws).n_row);
 
 	while (index_low < (*ws).length) { //do until start point is larger than n_pixels
 		//calculate row ceiling;
 
-		eol = find_eol((*p_fx).grad_cells.cells_x,(*ws).n_row);
+		eol = find_eol((*p_fx).grad_cells.cells_x, (*ws).n_row);
 
 		while (index_low < eol) {
 
-			calc_cell_fx(index_low, p_fx, &c1, &v_t);
-			draw_cell(index_low,ws,p_fx,&c1);
-
+			get_corner_vectors(index_low, p_fx, &v_t);
+			draw_cell_ws(index_low, ws, p_fx, &c1);
 
 		}
 
