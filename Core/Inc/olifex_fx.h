@@ -9,8 +9,6 @@
 #define INC_EFFECTS_H_
 
 #include <olifex_pixel.h>
-#include "math.h"
-#include "arm_math.h"
 #include "tables.h"
 #include "stdbool.h"
 #include "string.h"

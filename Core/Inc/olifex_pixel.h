@@ -9,6 +9,8 @@
 #define INC_PIXEL_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
+#include <arm_math.h>
 
 
 #define TIM_PERIOD			52
