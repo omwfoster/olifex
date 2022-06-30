@@ -33,6 +33,7 @@ void init_olifex_fx(fx_config *p_fx, uint16_t col_len,uint16_t row_len,uint16_t 
 
 	fx_init = true;
 
+	(*p_fx).n_pixels = PIXEL_ROWS * PIXEL_COLUMNS;
 	(*p_fx).grad_cells.cell_size_x = cell_size;
 	(*p_fx).grad_cells.cell_size_y = cell_size;
 	(*p_fx).grad_cells.cells_x = ceil(((float32_t)row_len/(float32_t)cell_size));
