@@ -250,7 +250,7 @@ int main(void)
 
  		if ((hdma_tim3_ch3.State == HAL_DMA_STATE_READY)&&(frame_tick == true)) {
 
- 		if(!(cli1==NULL)&&(frame_tick==true))
+ 		if(!(cli1==NULL))
  		{
  			cli1->cmd_running->func(&pixel_in_rgb, &fx_cfg1);
  			write_frame_to_output(&pixel_in_rgb, &pixel_out_pwm);
@@ -379,9 +379,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 28-1;
+  htim4.Init.Prescaler = 10000-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 500;
+  htim4.Init.Period = 1000;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
