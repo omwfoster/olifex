@@ -277,6 +277,24 @@ void RunningLights(UCOL * c, uint32_t delay_ms, uint32_t time_s , fx_config * p_
 }
 
 
+void test_gradient( ws2812_rgb_struct *ws, fx_config *p_fx)
+ {
+
+	UCOL Color;
+
+	for (int y = 0; y < (*p_fx).n_pixels; y++) {
+
+				Color.xRGB.red = y ;
+				Color.xRGB.green = 0 ;
+				Color.xRGB.blue = 0 ;
+				set_pixel_GRB(ws, &Color, y);
+
+	}
+
+}
+
+
+
 
 
 

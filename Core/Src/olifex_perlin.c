@@ -140,9 +140,9 @@ uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx) {
 
 			if ((index < eol) && (index < (*p_fx).n_pixels)) {
 				intensity = lerp(&three_square[index], &v_corners, (q15_t) 0.1f);
-				Color.xRGB.red = 0 ;//(uint8_t)(float32_t)(intensity);
-				Color.xRGB.green =  0 ;//(uint8_t) (float32_t)(intensity);
-				Color.xRGB.blue = 1 ; // (uint8_t) (float32_t)(intensity);
+				Color.xRGB.red =   (uint8_t)(float32_t)(intensity);
+				Color.xRGB.green = (uint8_t)(float32_t)(intensity);
+				Color.xRGB.blue =  (uint8_t)(float32_t)(intensity);
 				set_pixel_GRB(ws, &Color, index);
 				index++;
 			}
@@ -159,6 +159,9 @@ uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx) {
 
 	return 1;
 }
+
+
+
 
 void perlin(ws2812_rgb_struct *ws, fx_config *p_fx) {
 

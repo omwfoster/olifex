@@ -8,7 +8,7 @@
 
 #define MAX_BUF_SIZE        128     /* Maximum size of CLI Rx buffer */ 
 #define CMD_TERMINATOR      '\r'    /* Delimiter denoting end of cmd from user */
-#define MAX_FUNCTIONS        5
+#define MAX_FUNCTIONS        6
 
 typedef enum
 {

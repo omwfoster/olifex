@@ -80,10 +80,12 @@ void hsv_scroll(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
 void hsv_wave(ws2812_rgb_struct  *_ws_struct, fx_config * p_fx);
 void fire_fill(ws2812_rgb_struct *_ws_struct,fx_config * p_fx);
 void perlin(ws2812_rgb_struct *_ws_struct, fx_config * p_fx);
+void test_gradient(ws2812_rgb_struct *ws, fx_config *p_fx);
 void heat_color(UCOL * _rgb, uint8_t temperature);
 void shift_offset();
-uint8_t    fill_pixel_map(fx_config * p_fx);
-uint16_t   map_to_pixel(uint16_t i, fx_config * p_fx);
+
+uint8_t		fill_pixel_map(fx_config * p_fx);
+uint16_t	map_to_pixel(uint16_t i, fx_config * p_fx);
 
 
 #endif /* INC_EFFECTS_H_ */
