@@ -124,7 +124,7 @@ uint16_t find_eoc(uint16_t index, uint16_t n_col, uint16_t row_len) {
 
 uint16_t draw_cell_ws(uint16_t index, ws2812_rgb_struct *ws, fx_config *p_fx) {
 
-	uint16_t line_start = index;
+	uint16_t line_start = ((index / (*ws).n_col) * (*ws).n_col);
 	uint16_t eol = find_eol(line_start, (*ws).n_col);
 	rnd_v v_corners = { { 0 } };
 	UCOL Color;

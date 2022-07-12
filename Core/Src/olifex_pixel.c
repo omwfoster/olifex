@@ -41,7 +41,7 @@ void set_pixel_GRB(ws2812_rgb_struct *_ws_struct, UCOL *_Color,
 		uint32_t _pos) {
 
 	_ws_struct->cursor    =   _ws_struct->ptr_start;
-	_ws_struct->cursor   +=   _pos;
+	_ws_struct->cursor   +=   _pos ;
 	* _ws_struct->cursor  = * _Color;
 
 }

@@ -282,11 +282,11 @@ void test_gradient( ws2812_rgb_struct *ws, fx_config *p_fx)
 
 	UCOL Color;
 
-	for (int y = 0; y < (*p_fx).n_pixels; y++) {
+	for (uint16_t y = 0; y < (*p_fx).n_pixels; y++) {
 
 				Color.xRGB.red = y ;
 				Color.xRGB.green = 0 ;
-				Color.xRGB.blue = 0 ;
+				Color.xRGB.blue = 255 - y ;
 				set_pixel_GRB(ws, &Color, y);
 
 	}
